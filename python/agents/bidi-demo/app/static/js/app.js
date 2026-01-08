@@ -35,7 +35,9 @@ enableAffectiveDialogCheckbox.addEventListener("change", handleRunConfigChange);
 
 // Build WebSocket URL with RunConfig options as query parameters
 function getWebSocketUrl() {
-  const baseUrl = "ws://" + window.location.host + "/ws/" + userId + "/" + sessionId;
+  // Use wss:// for HTTPS pages, ws:// for HTTP (localhost development)
+  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const baseUrl = wsProtocol + "//" + window.location.host + "/ws/" + userId + "/" + sessionId;
   const params = new URLSearchParams();
 
   // Add proactivity option if checked
