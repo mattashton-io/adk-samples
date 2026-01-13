@@ -13,17 +13,20 @@
 # limitations under the License.
 
 import os
+
 from dotenv import load_dotenv
-from google.adk.tools.application_integration_tool.application_integration_toolset import ApplicationIntegrationToolset
+from google.adk.tools.application_integration_tool.application_integration_toolset import (
+    ApplicationIntegrationToolset,
+)
 
 load_dotenv()
 
-GOOGLE_CLOUD_PROJECT=os.getenv("GOOGLE_CLOUD_PROJECT")
-GOOGLE_CLOUD_LOCATION=os.getenv("GOOGLE_CLOUD_LOCATION")
-APPINT_PROCESS_NAME=os.getenv("APPINT_PROCESS_NAME")
-APPINT_PROCESS_TRIGGER=os.getenv("APPINT_PROCESS_TRIGGER")
+GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
+APPINT_PROCESS_NAME = os.getenv("APPINT_PROCESS_NAME")
+APPINT_PROCESS_TRIGGER = os.getenv("APPINT_PROCESS_TRIGGER")
 
-TOOL_INSTR="""
+TOOL_INSTR = """
       **Tool Instructions: Order Processing**
         You are an order processing assistant. Your primary goal is to help users place new orders by gathering the necessary information and using the available tools to submit the request.
 
@@ -55,7 +58,7 @@ TOOL_INSTR="""
 
 order_processing_tool = ApplicationIntegrationToolset(
     project=GOOGLE_CLOUD_PROJECT,
-    location=GOOGLE_CLOUD_LOCATION, 
+    location=GOOGLE_CLOUD_LOCATION,
     integration=APPINT_PROCESS_NAME,
     triggers=[APPINT_PROCESS_TRIGGER],
     tool_instructions=TOOL_INSTR,
