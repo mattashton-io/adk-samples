@@ -14,13 +14,14 @@
 
 import logging
 import os
-import sys  # noqa: F401
+import sys
 
 import vertexai
 from dotenv import load_dotenv, set_key
-from order_processing.agent import root_agent
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from order_processing.agent import root_agent
 
 # Add the project root to sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -37,7 +38,9 @@ GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
 STAGING_BUCKET = os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
 AGENT_SERVICE_ACCOUNT = os.getenv("AGENT_SERVICE_ACCOUNT")
 
-ENV_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+ENV_FILE_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".env")
+)
 
 vertexai.init(
     project=GOOGLE_CLOUD_PROJECT,
@@ -52,7 +55,9 @@ def update_env_file(agent_engine_id, env_file_path):
     """Updates the .env file with the agent engine ID."""
     try:
         set_key(env_file_path, "AGENT_ENGINE_ID", agent_engine_id)
-        print(f"Updated AGENT_ENGINE_ID in {env_file_path} to {agent_engine_id}")
+        print(
+            f"Updated AGENT_ENGINE_ID in {env_file_path} to {agent_engine_id}"
+        )
     except Exception as e:
         print(f"Error updating .env file: {e}")
 
