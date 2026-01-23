@@ -14,4 +14,4 @@
 
 """Critic agent for identifying and verifying statements using search tools."""
 
-from .agent import critic_agent  # noqa: F401
+from .agent import critic_agent

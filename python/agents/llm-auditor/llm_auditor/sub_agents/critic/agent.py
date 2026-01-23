@@ -51,7 +51,7 @@ def _render_reference(
         if parts:
             references.append("* " + ": ".join(parts) + "\n")
     if references:
-        reference_text = "".join(["\n\nReference:\n\n"] + references)
+        reference_text = "".join(["\n\nReference:\n\n", *references])
         llm_response.content.parts.append(types.Part(text=reference_text))
     if all(part.text is not None for part in llm_response.content.parts):
         all_text = "\n".join(part.text for part in llm_response.content.parts)
