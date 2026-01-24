@@ -100,7 +100,7 @@ class TerminalBenchEnvironment:
             logger.error("Docker compose up timed out after 300s")
             raise RuntimeError("Container setup timed out") from e
         except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Unexpected error during setup: %s", e) 
+            logger.error("Unexpected error during setup: %s", e)
             raise RuntimeError("Container setup timed out") from e
 
     def get_working_dir(self) -> str:

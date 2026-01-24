@@ -23,6 +23,7 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.sessions import InMemorySessionService
 from google.adk.tools import ToolContext
+
 from travel_concierge.agent import root_agent
 from travel_concierge.tools.memory import memorize
 from travel_concierge.tools.places import map_tool
@@ -75,7 +76,9 @@ class TestAgents(unittest.TestCase):
     )
     def test_places(self):
         self.tool_context.state["poi"] = {
-            "places": [{"place_name": "Machu Picchu", "address": "Machu Picchu, Peru"}]
+            "places": [
+                {"place_name": "Machu Picchu", "address": "Machu Picchu, Peru"}
+            ]
         }
         result = map_tool(key="poi", tool_context=self.tool_context)
         print(result)

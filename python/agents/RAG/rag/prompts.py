@@ -20,7 +20,6 @@ These instructions guide the agent's behavior, workflow, and tool usage.
 
 
 def return_instructions_root() -> str:
-
     instruction_prompt_v1 = """
         You are an AI assistant with access to specialized corpus of documents.
         Your role is to provide accurate and concise answers to questions based
@@ -64,7 +63,7 @@ def return_instructions_root() -> str:
         enough information.
         """
 
-    instruction_prompt_v0 = """
+    _instruction_prompt_v0 = """
         You are a Documentation Assistant. Your role is to provide accurate and concise
         answers to questions based on documents that are retrievable using ask_vertex_retrieval. If you believe
         the user is just discussing, don't use the retrieval tool. But if the user is asking a question and you are

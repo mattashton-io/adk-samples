@@ -15,7 +15,7 @@
 """Wrapper to Google Maps Places API."""
 
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 import requests
 from google.adk.tools import ToolContext
@@ -31,10 +31,12 @@ class PlacesService:
             # https://developers.google.com/maps/documentation/places/web-service/get-api-key
             self.places_api_key = os.getenv("GOOGLE_PLACES_API_KEY")
 
-    def find_place_from_text(self, query: str) -> Dict[str, str]:
+    def find_place_from_text(self, query: str) -> dict[str, str]:
         """Fetches place details using a text query."""
         self._check_key()
-        places_url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+        places_url = (
+            "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+        )
         params = {
             "input": query,
             "inputtype": "textquery",
@@ -55,7 +57,9 @@ class PlacesService:
             place_id = place_details["place_id"]
             place_name = place_details["name"]
             place_address = place_details["formatted_address"]
-            photos = self.get_photo_urls(place_details.get("photos", []), maxwidth=400)
+            photos = self.get_photo_urls(
+                place_details.get("photos", []), maxwidth=400
+            )
             map_url = self.get_map_url(place_id)
             location = place_details["geometry"]["location"]
             lat = str(location["lat"])
@@ -75,8 +79,8 @@ class PlacesService:
             return {"error": f"Error fetching place data: {e}"}
 
     def get_photo_urls(
-        self, photos: List[Dict[str, Any]], maxwidth: int = 400
-    ) -> List[str]:
+        self, photos: list[dict[str, Any]], maxwidth: int = 400
+    ) -> list[str]:
         """Extracts photo URLs from the 'photos' list."""
         photo_urls = []
         for photo in photos:

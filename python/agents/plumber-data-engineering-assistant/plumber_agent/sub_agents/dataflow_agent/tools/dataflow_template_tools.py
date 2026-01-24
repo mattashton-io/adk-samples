@@ -54,7 +54,7 @@ def get_dataflow_template_repo() -> dict[str, str]:
         return {"status": "success", "repo_path": repo_path}
     except git.exc.GitCommandError as err:
         logger.error("An error occurred: %s", err, exc_info=True)
-        return {"status": f"error - {str(err)}"}
+        return {"status": f"error - {err!s}"}
 
 
 def validate_input_params(
@@ -98,7 +98,7 @@ def validate_input_params(
         logger.error("An error occurred: %s", err, exc_info=True)
         return {
             "validation_result": "failed",
-            "comment": f"An unexpected error occurred during validation - {str(err)}",
+            "comment": f"An unexpected error occurred during validation - {err!s}",
         }
 
 
@@ -120,7 +120,7 @@ def get_dataflow_template(user_prompt: str) -> str:
             location=os.getenv("GOOGLE_CLOUD_LOCATION"),
         )
         model = GenerativeModel(MODEL)
-        with open(f"./{TEMPLATE_MAPPING_PATH}", "r", encoding="utf-8") as json_file:
+        with open(f"./{TEMPLATE_MAPPING_PATH}", encoding="utf-8") as json_file:
             template_mapping_dict = json.load(json_file)
         instruction = SEARCH_DATAFLOW_TEMPLATE_INSTRUCTION.format(
             task=user_prompt,
@@ -128,9 +128,9 @@ def get_dataflow_template(user_prompt: str) -> str:
         )
         response = model.generate_content(instruction)
         return response.text
-    except (IOError, json.JSONDecodeError, ValueError) as err:
+    except (OSError, json.JSONDecodeError, ValueError) as err:
         logger.error("An error occurred: %s", err, exc_info=True)
-        return json.dumps({"error": f"An unexpected error occurred: {str(err)}"})
+        return json.dumps({"error": f"An unexpected error occurred: {err!s}"})
 
 
 def _prepare_gcloud_command(
@@ -145,7 +145,8 @@ def _prepare_gcloud_command(
     default_labels = "source=plumber"
 
     if is_flex:
-        run_cmd = base_cmd + [
+        return [
+            *base_cmd,
             "flex-template",
             "run",
             job_name,
@@ -155,23 +156,26 @@ def _prepare_gcloud_command(
             f"--parameters={parameters_str}",
             f"--additional-user-labels={default_labels}",
         ]
-    else:
-        run_cmd = base_cmd + [
-            "jobs",
-            "run",
-            job_name,
-            f"--project={gcp_config['project_id']}",
-            f"--region={gcp_config['region']}",
-            f"--gcs-location={template_gcs_path}",
-            f"--parameters={parameters_str}",
-            f"--staging-location={gcp_config['staging_location']}",
-            f"--additional-user-labels={default_labels}",
-        ]
-    return run_cmd
+
+    return [
+        *base_cmd,
+        "jobs",
+        "run",
+        job_name,
+        f"--project={gcp_config['project_id']}",
+        f"--region={gcp_config['region']}",
+        f"--gcs-location={template_gcs_path}",
+        f"--parameters={parameters_str}",
+        f"--staging-location={gcp_config['staging_location']}",
+        f"--additional-user-labels={default_labels}",
+    ]
 
 
 def submit_dataflow_template(
-    job_name: str, input_params: str, template_params: str, gcp_config: dict[str, str]
+    job_name: str,
+    input_params: str,
+    template_params: str,
+    gcp_config: dict[str, str],
 ) -> dict[str, str]:
     """
     Submits a Dataflow job using a given template.
@@ -186,11 +190,17 @@ def submit_dataflow_template(
         )
 
         if not isinstance(template_def, dict):
-            return {"status": "failed", "comment": "Invalid template definition."}
+            return {
+                "status": "failed",
+                "comment": "Invalid template definition.",
+            }
 
         template_gcs_path = template_def.get("template_gcs_path")
         if not template_gcs_path:
-            return {"status": "failed", "comment": "Template GCS path not found."}
+            return {
+                "status": "failed",
+                "comment": "Template GCS path not found.",
+            }
 
         validation = validate_input_params(
             template_def.get("params", {}), user_input_dict
@@ -202,20 +212,30 @@ def submit_dataflow_template(
             }
 
         delimiter = "~"
-        params_list = [f"{key}={value}" for key, value in user_input_dict.items()]
+        params_list = [
+            f"{key}={value}" for key, value in user_input_dict.items()
+        ]
         parameters_str = f"^{delimiter}^{delimiter.join(params_list)}"
 
-        is_flex = "/flex/" in template_gcs_path or template_def.get("type") == "FLEX"
+        is_flex = (
+            "/flex/" in template_gcs_path or template_def.get("type") == "FLEX"
+        )
         run_cmd = _prepare_gcloud_command(
             job_name, gcp_config, template_gcs_path, parameters_str, is_flex
         )
 
-        result = subprocess.run(run_cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            run_cmd, capture_output=True, text=True, check=True
+        )
         return {
             "status": "success",
             "stdout": result.stdout,
             "comment": "Job Submitted",
         }
-    except (json.JSONDecodeError, subprocess.CalledProcessError, KeyError) as err:
+    except (
+        json.JSONDecodeError,
+        subprocess.CalledProcessError,
+        KeyError,
+    ) as err:
         logger.error("An error occurred: %s", err, exc_info=True)
-        return {"status": "failed", "comment": f"An error occurred: {str(err)}"}
+        return {"status": "failed", "comment": f"An error occurred: {err!s}"}

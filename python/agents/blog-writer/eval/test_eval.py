@@ -18,6 +18,6 @@ async def test_blogger_agent_evaluation():
 
     if eval_results:
         for result in eval_results:
-            assert (
-                result.passed
-            ), f"Evaluation failed for {result.eval_set_path} with score {result.overall_score}"
+            assert result.passed, (
+                f"Evaluation failed for {result.eval_set_path} with score {result.overall_score}"
+            )

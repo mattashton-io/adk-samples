@@ -67,7 +67,9 @@ def generate_beam_transformations_from_sttm(gcs_path: str) -> str:
             [STTM_PARSING_INSTRUCTIONS_BEAM_TRANSFORMATIONS, file_content]
         )
 
-        output_code = response.text.replace("```python", "").replace("```", "").strip()
+        output_code = (
+            response.text.replace("```python", "").replace("```", "").strip()
+        )
         logger.info("Successfully generated Beam transformations.")
         return output_code
 
@@ -204,7 +206,7 @@ async def generate_and_run_beam_pipeline(
                 try:
                     process.terminate()
                     await asyncio.wait_for(process.wait(), timeout=10)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     print(
                         "--- WARNING: Subprocess did not terminate gracefully, killing it. ---"
                     )
@@ -254,22 +256,30 @@ async def generate_and_run_beam_pipeline(
 
         job_details = {"name": sanitized_job_name}
         id_match = re.search(r"id: '([^']*)'", output)
-        client_request_id_match = re.search(r"clientRequestId: '([^']*)'", output)
+        client_request_id_match = re.search(
+            r"clientRequestId: '([^']*)'", output
+        )
         create_time_match = re.search(r"createTime: '([^']*)'", output)
 
         job_id = job_id_match.group(1) if job_id_match else "unknown"
         job_details["id"] = job_id
         if id_match:
             if client_request_id_match:
-                job_details["clientRequestId"] = client_request_id_match.group(1)
+                job_details["clientRequestId"] = client_request_id_match.group(
+                    1
+                )
             if create_time_match:
                 job_details["createTime"] = create_time_match.group(1)
 
-        logger.info("Dataflow job details: %s", json.dumps(job_details, indent=2))
+        logger.info(
+            "Dataflow job details: %s", json.dumps(job_details, indent=2)
+        )
         gcs_path, gcs_error = None, None
         try:
             storage_client = storage.Client(project=project_id)
-            bucket_name, *path_parts = gcs_bucket_path.replace("gs://", "").split("/")
+            bucket_name, *path_parts = gcs_bucket_path.replace(
+                "gs://", ""
+            ).split("/")
             base_prefix = "/".join(filter(None, path_parts))
             script_filename = f"{sanitized_job_name}-{uuid.uuid4().hex[:8]}.py"
             gcs_path_str = os.path.join(
@@ -283,15 +293,21 @@ async def generate_and_run_beam_pipeline(
         except exceptions.GoogleAPICallError as e:
             gcs_error = e
 
-        logger.info("Successfully launched Dataflow job '%s'.", sanitized_job_name)
-        report_lines = [f"Successfully launched Dataflow job '{sanitized_job_name}'."]
+        logger.info(
+            "Successfully launched Dataflow job '%s'.", sanitized_job_name
+        )
+        report_lines = [
+            f"Successfully launched Dataflow job '{sanitized_job_name}'."
+        ]
         report_lines.append("Job Details:")
         for key, value in sorted(job_details.items()):
             report_lines.append(f"  {key}: {value}")
 
         status = "success"
         if gcs_path:
-            report_lines.append(f"\nThe pipeline script was saved to {gcs_path}")
+            report_lines.append(
+                f"\nThe pipeline script was saved to {gcs_path}"
+            )
         if gcs_error:
             status = "success_with_warning"
             report_lines.append(
@@ -318,7 +334,7 @@ async def generate_and_run_beam_pipeline(
     except (OSError, ValueError) as e:
         logger.error("An error occurred: %s", e, exc_info=True)
         return json.dumps(
-            {"status": "error", "error_message": f"Unexpected error: {str(e)}"}
+            {"status": "error", "error_message": f"Unexpected error: {e!s}"}
         )
     finally:
         if os.path.exists(temp_filename):
@@ -336,7 +352,9 @@ def review_dataflow_code(code: str) -> str:
             location=os.getenv("GOOGLE_CLOUD_LOCATION"),
         )
         model = GenerativeModel(MODEL)
-        response = model.generate_content([DATAFLOW_CODE_REVIEWER_EXPERT_PROMPT, code])
+        response = model.generate_content(
+            [DATAFLOW_CODE_REVIEWER_EXPERT_PROMPT, code]
+        )
         reviewed_code = (
             response.text.replace("```python", "").replace("```", "").strip()
         )
@@ -344,6 +362,8 @@ def review_dataflow_code(code: str) -> str:
         return reviewed_code
     except (ValueError, RuntimeError) as e:
         logger.error(
-            "An error occurred while reviewing the Dataflow code: %s", e, exc_info=True
+            "An error occurred while reviewing the Dataflow code: %s",
+            e,
+            exc_info=True,
         )
         return code

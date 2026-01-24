@@ -10,7 +10,6 @@ def traverse(obj, sample_values, path=""):
         # To keep the sample concise, we only traverse the first item in a list.
         if obj:
             traverse(obj[0], sample_values, f"{path}[]")
-    else:
-        # We only want to store the first value we encounter for a given path.
-        if path not in sample_values:
-            sample_values[path] = obj
+    # We only want to store the first value we encounter for a given path.
+    elif path not in sample_values:
+        sample_values[path] = obj

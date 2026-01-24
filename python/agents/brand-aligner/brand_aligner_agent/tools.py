@@ -87,7 +87,7 @@ async def save_files_as_artifacts(
 
     for i, part in enumerate(last_user_message.parts):
         if isinstance(part, dict):
-            part = types.Part.model_validate(part)
+            part = types.Part.model_validate(part)  # noqa: PLW2901
 
         if part.inline_data is None:
             continue
@@ -218,7 +218,6 @@ async def _upload_artifact_to_gcs(
         user_id=user_id,
         file_name_suffix=file_name_suffix,
     )
-    return None
 
 
 async def save_artifacts_to_gcs_tool(tool_context: ToolContext) -> str:
@@ -295,7 +294,7 @@ async def _get_processed_guideline(
         file_name_ext, f"processed_guideline_{file_name}"
     )
     blobs = storage_client.list_blobs(GCS_BUCKET, prefix=prefix_to_find)
-    retrieved_blobs = [b for b in blobs]
+    retrieved_blobs = list(blobs)
 
     if len(retrieved_blobs) == 0:
         logger.info("No processed guideline found for %s", gcs_uri)
@@ -436,7 +435,7 @@ async def _evaluate_single_asset(
     asset_id: str,
     category: str,
     asset_prompt: str | None = "",
-    video_reference_image_uris: list[str] | None = [],
+    video_reference_image_uris: list[str] | None = None,
 ) -> AssetEvaluation:
     """Helper to evaluate one asset from GCS against the processed guidelines."""
     logger.info(f"Evaluating asset: {asset_uri}")
@@ -538,7 +537,7 @@ def _format_evaluation_string(asset_evaluation: AssetEvaluation) -> str:
         f"| {' | '.join(['---'] * len(headers))} |",
     ]
 
-    verdict_icons = {"yes": "✅", "no": "❌", "n/a": "➖"}
+    verdict_icons = {"yes": "✅", "no": "❌", "n/a": "➖"}  # noqa: RUF001
 
     total_checks = 0
     pass_count = 0

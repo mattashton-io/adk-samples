@@ -37,6 +37,7 @@ from ..config import PRO_MODEL
 
 logger = logging.getLogger("LocationStrategyPipeline")
 
+
 async def generate_html_report(
     report_data: str, tool_context: ToolContext
 ) -> dict:

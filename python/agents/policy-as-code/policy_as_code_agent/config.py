@@ -10,7 +10,9 @@ LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
 # Memory Bank Configuration
 ENABLE_MEMORY_BANK = os.getenv("ENABLE_MEMORY_BANK", "True").lower() == "true"
 FIRESTORE_DATABASE = os.getenv("FIRESTORE_DATABASE", "(default)")
-FIRESTORE_COLLECTION_POLICIES = os.getenv("FIRESTORE_COLLECTION_POLICIES", "policies")
+FIRESTORE_COLLECTION_POLICIES = os.getenv(
+    "FIRESTORE_COLLECTION_POLICIES", "policies"
+)
 FIRESTORE_COLLECTION_EXECUTIONS = os.getenv(
     "FIRESTORE_COLLECTION_EXECUTIONS", "policy_executions"
 )
@@ -28,13 +30,15 @@ PROMPT_CODE_GENERATION_FILE = os.getenv(
     "PROMPT_CODE_GENERATION_FILE", "code_generation.md"
 )
 PROMPT_REMEDIATION_FILE = os.getenv("PROMPT_REMEDIATION_FILE", "remediation.md")
-PROMPT_INSTRUCTION_FILE = os.getenv("PROMPT_INSTRUCTION_FILE", "instructions.md")
+PROMPT_INSTRUCTION_FILE = os.getenv(
+    "PROMPT_INSTRUCTION_FILE", "instructions.md"
+)
 
 # MCP Configuration
 DATAPLEX_MCP_SERVER_URL = os.getenv("DATAPLEX_MCP_SERVER_URL")
 
 # Threading Configuration
-MAX_REMEDIATION_WORKERS = int(os.getenv("MAX_REMEDIATION_WORKERS", 10))
+MAX_REMEDIATION_WORKERS = int(os.getenv("MAX_REMEDIATION_WORKERS", "10"))
 
 # Default Policies
 DEFAULT_CORE_POLICIES = [

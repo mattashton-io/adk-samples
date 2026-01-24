@@ -34,7 +34,10 @@ def deploy_dbt_project(gcs_bucket_path: str) -> dict[str, str | None]:
     """
     try:
         if not gcs_bucket_path.startswith("gs://"):
-            return {"deployment_status": "Invalid gcs URL", "deployed_path": None}
+            return {
+                "deployment_status": "Invalid gcs URL",
+                "deployed_path": None,
+            }
 
         bucket_name, project_name = gcs_bucket_path[5:].split("/", 1)
 
@@ -64,4 +67,4 @@ def deploy_dbt_project(gcs_bucket_path: str) -> dict[str, str | None]:
         }
     except Exception as err:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", err, exc_info=True)
-        return {"deployment_status": f"error - {str(err)}", "deployed_path": None}
+        return {"deployment_status": f"error - {err!s}", "deployed_path": None}

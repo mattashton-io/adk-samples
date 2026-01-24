@@ -23,7 +23,10 @@ def _create_github_headers(token: str = "") -> dict[str, str]:
     Returns:
         Dict[str, str]: A dictionary containing the HTTP headers.
     """
-    headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": USER_AGENT}
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": USER_AGENT,
+    }
     if token:
         headers["Authorization"] = f"Bearer {token}"
     return headers

@@ -560,9 +560,7 @@ def run(
             instances_to_run = list(
                 benchmark_dataset.select(range(min(n, total_instances)))
             )
-            logger.info(
-                "Running the first %d instances", len(instances_to_run)
-            )
+            logger.info("Running the first %d instances", len(instances_to_run))
         except ValueError as exc:
             instance = next(
                 (

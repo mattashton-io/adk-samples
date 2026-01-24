@@ -14,7 +14,6 @@
 
 """Pydantic schemas for Location Intelligence Report structured output."""
 
-
 from pydantic import BaseModel, Field
 
 

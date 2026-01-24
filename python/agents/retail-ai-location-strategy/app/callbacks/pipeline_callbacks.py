@@ -287,7 +287,6 @@ def _extract_code_from_invocation(callback_context: CallbackContext) -> str:
 
     except Exception as e:
         logger.warning(f"Error extracting code from invocation context: {e}")
-        
 
         logger.debug(traceback.format_exc())
 
@@ -296,7 +295,6 @@ def _extract_code_from_invocation(callback_context: CallbackContext) -> str:
 
 def _extract_python_code_from_content(content: str) -> str:
     """Extract Python code blocks from markdown content."""
-    
 
     if not content:
         return ""

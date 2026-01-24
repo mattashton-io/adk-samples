@@ -17,10 +17,11 @@ import os
 import sys
 
 import vertexai
-from auto_insurance_agent.agent import root_agent
 from dotenv import load_dotenv, set_key
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from auto_insurance_agent.agent import root_agent
 
 # Add the project root to sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

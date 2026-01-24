@@ -62,18 +62,24 @@ def validate_code_safety(code: str) -> list:
 def run_simulation(policy_code: str, metadata: list) -> list:
     violations = []
     if not policy_code or policy_code.startswith("# API key not configured"):
-        violations.append({"policy": "Configuration Error", "violation": policy_code})
+        violations.append(
+            {"policy": "Configuration Error", "violation": policy_code}
+        )
         return violations
 
     if policy_code.startswith("# Error:"):
-        violations.append({"policy": "Execution Error", "violation": policy_code})
+        violations.append(
+            {"policy": "Execution Error", "violation": policy_code}
+        )
         return violations
 
     # 1. Static Security Analysis
     security_errors = validate_code_safety(policy_code)
     if security_errors:
         for err in security_errors:
-            violations.append({"policy": "Security Violation", "violation": err})
+            violations.append(
+                {"policy": "Security Violation", "violation": err}
+            )
         return violations
 
     # 2. Prepare Restricted Environment

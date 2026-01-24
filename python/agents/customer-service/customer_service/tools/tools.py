@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 MAX_DISCOUNT_RATE = 10
 MAX_FIXED_RATE = 20
 
+
 def send_call_companion_link(phone_number: str) -> str:
     """
     Sends a link to the user's phone number to start a video session.

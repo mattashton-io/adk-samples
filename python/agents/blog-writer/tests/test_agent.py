@@ -1,9 +1,10 @@
 import asyncio
 
-from blogger_agent.agent import root_agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types as genai_types
+
+from blogger_agent.agent import root_agent
 
 
 async def main():

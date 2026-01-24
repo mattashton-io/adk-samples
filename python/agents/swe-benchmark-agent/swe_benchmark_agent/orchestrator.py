@@ -29,12 +29,14 @@ MEMORY_LIMIT_EXIT_CODE = 137
 MAX_VERIFICATION_TURN_COUNT = 40
 MAX_STATE_SIZE_BYTES = 1024
 
+
 class Orchestrator:
     """Orchestrator for the benchmark agent."""
 
     def __init__(
         self,
-        env: swebench_environment.SWEBenchEnvironment | terminalbench_environment.TerminalBenchEnvironment,
+        env: swebench_environment.SWEBenchEnvironment
+        | terminalbench_environment.TerminalBenchEnvironment,
         benchmark_type: str = "swebench",
     ):
         """Initialize orchestrator with an environment.
@@ -570,7 +572,10 @@ class Orchestrator:
 
                 self.num_submit_calls += 1
 
-                if self.num_submit_calls == 1 and self.turn_count < MAX_VERIFICATION_TURN_COUNT:
+                if (
+                    self.num_submit_calls == 1
+                    and self.turn_count < MAX_VERIFICATION_TURN_COUNT
+                ):
                     verification_prompt = textwrap.dedent(
                         f"""
                         You are trying to submit your work, but before that, please carefully verify that you have performed the following steps as described in your instructions:

@@ -8,7 +8,7 @@ import json
 import os
 import time
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 
@@ -56,17 +56,19 @@ arize_client = ArizeDatasetsClient(api_key=ARIZE_API_KEY)
 
 # Initialize Phoenix model for evaluations
 phoenix_model = GeminiModel(
-    model="gemini-2.5-flash", project=GOOGLE_CLOUD_PROJECT, location="us-central1"
+    model="gemini-2.5-flash",
+    project=GOOGLE_CLOUD_PROJECT,
+    location="us-central1",
 )
 
 
-def load_test_data(filename: str) -> Dict[str, Any]:
+def load_test_data(filename: str) -> dict[str, Any]:
     """Load the conversation test data from JSON file."""
-    with open(f"eval/data/{filename}", "r") as f:
+    with open(f"eval/data/{filename}") as f:
         return json.load(f)
 
 
-def extract_conversation_data(test_data: Dict[str, Any]) -> List[Dict]:
+def extract_conversation_data(test_data: dict[str, Any]) -> list[dict]:
     """Extract individual queries and expected tool usage from conversation data."""
     dataset_rows = []
 
@@ -118,7 +120,9 @@ def extract_conversation_data(test_data: Dict[str, Any]) -> List[Dict]:
                         "expected_tool_uses": json.dumps(tool_uses),
                         "expected_agent_transfers": json.dumps(agent_transfers),
                         "expected_other_tools": json.dumps(other_tools),
-                        "session_state": json.dumps(session_input.get("state", {})),
+                        "session_state": json.dumps(
+                            session_input.get("state", {})
+                        ),
                         "conversation_context": (
                             json.dumps(conversation[:i]) if i > 0 else "[]"
                         ),
@@ -128,7 +132,7 @@ def extract_conversation_data(test_data: Dict[str, Any]) -> List[Dict]:
     return dataset_rows
 
 
-def create_arize_dataset(dataset_name: str, filename: str) -> Dict[str, str]:
+def create_arize_dataset(dataset_name: str, filename: str) -> dict[str, str]:
     """Create an Arize dataset from the test data."""
     test_data = load_test_data(filename)
     dataset_rows = extract_conversation_data(test_data)
@@ -164,7 +168,7 @@ def create_arize_dataset(dataset_name: str, filename: str) -> Dict[str, str]:
 
 def extract_tool_calls_from_response(
     response_text: str, agent_runner
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Extract tool call information from the agent's response and execution context.
     This creates metadata for evaluation.
@@ -172,6 +176,8 @@ def extract_tool_calls_from_response(
     # For the travel concierge, we'll need to examine execution traces
     # This is a simplified implementation - in practice, we'd need to capture
     # actual tool calls from the ADK agent execution
+
+    max_response_length = 100
 
     tool_calls = []
     agent_transfers = []
@@ -189,7 +195,9 @@ def extract_tool_calls_from_response(
             agent_transfers.append("pre_trip_agent")
         elif "in" in response_text.lower() and "trip" in response_text.lower():
             agent_transfers.append("in_trip_agent")
-        elif "post" in response_text.lower() and "trip" in response_text.lower():
+        elif (
+            "post" in response_text.lower() and "trip" in response_text.lower()
+        ):
             agent_transfers.append("post_trip_agent")
 
     # Detect other tool usage patterns
@@ -201,8 +209,8 @@ def extract_tool_calls_from_response(
             {
                 "tool_name": "search_tool",  # Generic inference
                 "tool_input": (
-                    response_text[:100] + "..."
-                    if len(response_text) > 100
+                    response_text[:max_response_length] + "..."
+                    if len(response_text) > max_response_length
                     else response_text
                 ),
             }
@@ -212,8 +220,10 @@ def extract_tool_calls_from_response(
 
 
 async def call_travel_concierge_agent(
-    query: str, session_state: Dict = None, conversation_context: List = None
-) -> Dict[str, Any]:
+    query: str,
+    session_state: dict | None = None,
+    conversation_context: list | None = None,
+) -> dict[str, Any]:
     """Call the travel concierge agent programmatically and return response with metadata."""
     runner = InMemoryRunner(agent=root_agent)
     session = await runner.session_service.create_session(
@@ -246,14 +256,16 @@ async def call_travel_concierge_agent(
     }
 
 
-async def task_function(dataset_row: Dict) -> str:
+async def task_function(dataset_row: dict) -> str:
     """
     Task function for Arize experiments.
     This calls the travel concierge agent and returns the response.
     """
     query = dataset_row.get("query", "")
     session_state = json.loads(dataset_row.get("session_state", "{}"))
-    conversation_context = json.loads(dataset_row.get("conversation_context", "[]"))
+    conversation_context = json.loads(
+        dataset_row.get("conversation_context", "[]")
+    )
 
     # Call the agent
     result = await call_travel_concierge_agent(
@@ -266,7 +278,9 @@ async def task_function(dataset_row: Dict) -> str:
         "actual_tool_calls": result["tool_calls"],
         "actual_agent_transfers": result["agent_transfers"],
         "expected_tool_uses": dataset_row.get("expected_tool_uses", "[]"),
-        "expected_agent_transfers": dataset_row.get("expected_agent_transfers", "[]"),
+        "expected_agent_transfers": dataset_row.get(
+            "expected_agent_transfers", "[]"
+        ),
         "expected_other_tools": dataset_row.get("expected_other_tools", "[]"),
         "expected_response": dataset_row.get("expected_response", ""),
     }
@@ -274,7 +288,7 @@ async def task_function(dataset_row: Dict) -> str:
     return json.dumps(metadata)
 
 
-def agent_handoff_evaluator(output: str, dataset_row: Dict) -> EvaluationResult:
+def agent_handoff_evaluator(output: str, dataset_row: dict) -> EvaluationResult:
     """Evaluator for agent handoff correctness."""
     try:
         # Parse the agent output to get the metadata
@@ -319,16 +333,20 @@ def agent_handoff_evaluator(output: str, dataset_row: Dict) -> EvaluationResult:
 
         explanation = f"Agent handoff evaluation: {label}. Expected transfers: {dataset_row.get('expected_agent_transfers', 'N/A')}, Actual transfers: {json.dumps(metadata.get('actual_agent_transfers', []))}"
 
-        return EvaluationResult(score=score, label=label, explanation=explanation)
+        return EvaluationResult(
+            score=score, label=label, explanation=explanation
+        )
 
     except Exception as e:
         print(f"Error in agent_handoff_evaluator: {e}")
         return EvaluationResult(
-            score=0.0, label="error", explanation=f"Error during evaluation: {str(e)}"
+            score=0.0,
+            label="error",
+            explanation=f"Error during evaluation: {e!s}",
         )
 
 
-def tool_usage_evaluator(output: str, dataset_row: Dict) -> EvaluationResult:
+def tool_usage_evaluator(output: str, dataset_row: dict) -> EvaluationResult:
     """Evaluator for tool usage correctness."""
     try:
         # Parse the agent output to get the metadata
@@ -373,16 +391,22 @@ def tool_usage_evaluator(output: str, dataset_row: Dict) -> EvaluationResult:
 
         explanation = f"Tool usage evaluation: {label}. Expected tools: {dataset_row.get('expected_other_tools', 'N/A')}, Actual tools: {json.dumps(metadata.get('actual_tool_calls', []))}"
 
-        return EvaluationResult(score=score, label=label, explanation=explanation)
+        return EvaluationResult(
+            score=score, label=label, explanation=explanation
+        )
 
     except Exception as e:
         print(f"Error in tool_usage_evaluator: {e}")
         return EvaluationResult(
-            score=0.0, label="error", explanation=f"Error during evaluation: {str(e)}"
+            score=0.0,
+            label="error",
+            explanation=f"Error during evaluation: {e!s}",
         )
 
 
-def response_quality_evaluator(output: str, dataset_row: Dict) -> EvaluationResult:
+def response_quality_evaluator(
+    output: str, dataset_row: dict
+) -> EvaluationResult:
     """Evaluator for response quality."""
     try:
         # Parse the agent output to get the metadata
@@ -397,7 +421,9 @@ def response_quality_evaluator(output: str, dataset_row: Dict) -> EvaluationResu
                 {
                     "query": dataset_row.get("query", ""),
                     "agent_response": metadata.get("agent_response", ""),
-                    "expected_response": dataset_row.get("expected_response", ""),
+                    "expected_response": dataset_row.get(
+                        "expected_response", ""
+                    ),
                 }
             ]
         )
@@ -422,12 +448,16 @@ def response_quality_evaluator(output: str, dataset_row: Dict) -> EvaluationResu
 
         explanation = f"Response quality evaluation: {label}. Query: {dataset_row.get('query', 'N/A')[:100]}..."
 
-        return EvaluationResult(score=score, label=label, explanation=explanation)
+        return EvaluationResult(
+            score=score, label=label, explanation=explanation
+        )
 
     except Exception as e:
         print(f"Error in response_quality_evaluator: {e}")
         return EvaluationResult(
-            score=0.0, label="error", explanation=f"Error during evaluation: {str(e)}"
+            score=0.0,
+            label="error",
+            explanation=f"Error during evaluation: {e!s}",
         )
 
 
@@ -479,7 +509,9 @@ def run_evaluation_experiment():
         # Handle the experiment result
         if hasattr(experiment_result, "id"):
             experiment_id = experiment_result.id
-        elif isinstance(experiment_result, tuple) and len(experiment_result) > 0:
+        elif (
+            isinstance(experiment_result, tuple) and len(experiment_result) > 0
+        ):
             experiment_id = (
                 experiment_result[0].id
                 if hasattr(experiment_result[0], "id")

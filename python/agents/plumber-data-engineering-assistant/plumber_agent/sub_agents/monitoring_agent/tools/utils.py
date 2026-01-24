@@ -3,7 +3,7 @@ This module provides utility functions for interacting with Google Cloud Monitor
 """
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from google.api_core import exceptions as google_exceptions
@@ -47,8 +47,8 @@ def get_cpu_utilization(project_id: str) -> dict[str, Any]:
 
         # The TimeInterval constructor accepts datetime objects directly
         interval = monitoring_v3.TimeInterval(
-            end_time=datetime.now(timezone.utc),
-            start_time=datetime.now(timezone.utc) - timedelta(minutes=5),
+            end_time=datetime.now(UTC),
+            start_time=datetime.now(UTC) - timedelta(minutes=5),
         )
         metric_filter = (
             'metric.type = "compute.googleapis.com/instance/cpu/utilization"'
@@ -59,7 +59,10 @@ def get_cpu_utilization(project_id: str) -> dict[str, Any]:
             alignment_period=timedelta(seconds=60),  # Use timedelta
             per_series_aligner=monitoring_v3.Aggregation.Aligner.ALIGN_MEAN,
             cross_series_reducer=monitoring_v3.Aggregation.Reducer.REDUCE_MEAN,
-            group_by_fields=["resource.label.instance_id", "resource.label.zone"],
+            group_by_fields=[
+                "resource.label.instance_id",
+                "resource.label.zone",
+            ],
         )
 
         response = util_client.list_time_series(
@@ -77,7 +80,9 @@ def get_cpu_utilization(project_id: str) -> dict[str, Any]:
             instance_id = series.resource.labels.get("instance_id", "N/A")
             zone = series.resource.labels.get("zone", "N/A")
 
-            cpu_data_report.append(f"  Instance ID: {instance_id}, Zone: {zone}")
+            cpu_data_report.append(
+                f"  Instance ID: {instance_id}, Zone: {zone}"
+            )
 
             for point in series.points:
                 value = point.value.double_value
@@ -121,7 +126,7 @@ def _process_log_iterator(iterator, _limit: int) -> list[str]:
     for entry in iterator:
         log_count += 1
         logger.info("Entry - %s \n %s", log_count, entry)
-        collected_logs.append(f"Entry {log_count}: {str(entry)}")
+        collected_logs.append(f"Entry {log_count}: {entry!s}")
         if log_count >= _limit:
             break
     return collected_logs
@@ -230,7 +235,8 @@ def get_latest_resource_based_logs(
         logger.info("\nSuccessfully fetched %s log entries.", log_count)
         return {
             "status": "success",
-            "report": "Fetched recent log entries:\n" + "\n".join(collected_logs),
+            "report": "Fetched recent log entries:\n"
+            + "\n".join(collected_logs),
         }
 
     except google_exceptions.GoogleAPIError as e:

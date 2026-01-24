@@ -20,12 +20,13 @@ import os
 
 import numpy as np
 import pandas as pd
-from data_science.utils.utils import USER_AGENT, get_env_var
 from google.adk.tools import ToolContext
 from google.adk.tools.bigquery.client import get_bigquery_client
 from google.cloud import bigquery
 from google.genai import Client
 from google.genai.types import HttpOptions
+
+from data_science.utils.utils import USER_AGENT, get_env_var
 
 from .chase_sql import chase_constants
 

@@ -28,7 +28,8 @@ def run_python_code(
     try:
         result = subprocess.run(
             ["python", py_filepath],
-            check=False, cwd=run_cwd,
+            check=False,
+            cwd=run_cwd,
             capture_output=True,
             text=True,
             timeout=exec_timeout,

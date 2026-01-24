@@ -30,6 +30,7 @@ if project_root not in sys.path:
 MAX_ARGS = 100
 MAX_RESPONSE_LENGTH = 100
 
+
 def pretty_print_event(event):
     """Pretty prints an event with truncation for long content."""
     if "content" not in event:
@@ -51,7 +52,7 @@ def pretty_print_event(event):
             # Truncate args if too long
             args = json.dumps(func_call.get("args", {}))
             if len(args) > MAX_ARGS:
-                args = args[:MAX_ARGS-3] + "..."
+                args = args[: MAX_ARGS - 3] + "..."
             print(f"  Args: {args}")
         elif "functionResponse" in part:
             func_response = part["functionResponse"]
@@ -61,7 +62,7 @@ def pretty_print_event(event):
             # Truncate response if too long
             response = json.dumps(func_response.get("response", {}))
             if len(response) > MAX_RESPONSE_LENGTH:
-                response = response[:MAX_RESPONSE_LENGTH-3] + "..."
+                response = response[: MAX_RESPONSE_LENGTH - 3] + "..."
             print(f"  Response: {response}")
 
 

@@ -55,7 +55,7 @@ def exception_wrapper(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            return f"Exception occurred in {func.__name__}: {str(e)}"
+            return f"Exception occurred in {func.__name__}: {e!s}"
 
     return wrapped_function
 
@@ -111,7 +111,9 @@ def initial_bq_nl2sql(
     ]
     model = tool_context.state["database_settings"]["model"]
     temperature = tool_context.state["database_settings"]["temperature"]
-    generate_sql_type = tool_context.state["database_settings"]["generate_sql_type"]
+    generate_sql_type = tool_context.state["database_settings"][
+        "generate_sql_type"
+    ]
 
     if generate_sql_type == GenerateSQLType.DC.value:
         prompt = DC_PROMPT_TEMPLATE.format(

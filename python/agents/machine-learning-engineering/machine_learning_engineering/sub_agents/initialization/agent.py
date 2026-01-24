@@ -259,9 +259,7 @@ def update_merger_states(
             best_idx = int(reference_idx)
     elif score >= best_score:
         best_score = score
-        base_solution = merged_code.replace("```python", "").replace(
-            "```", ""
-        )
+        base_solution = merged_code.replace("```python", "").replace("```", "")
         best_idx = int(reference_idx)
     callback_context.state[f"best_score_{task_id}"] = best_score
     callback_context.state[f"base_solution_{task_id}"] = base_solution

@@ -171,9 +171,7 @@ async def generate_audio(
     return {"name": STATIC_AUDIO_FALLBACK}
 
 
-async def _generate_voiceover_content(
-    prompt: str, text: str
-) -> bytes | None:
+async def _generate_voiceover_content(prompt: str, text: str) -> bytes | None:
     """Synthesizes speech using Gemini-TTS.
 
     Args:

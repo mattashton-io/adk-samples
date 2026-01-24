@@ -4,12 +4,12 @@
 # python time-series-forecasting-diagram.py
 # The output image (e.g., time-series-forecasting-diagram.png) will be saved in the same directory.
 
-from diagrams import Diagram, Cluster, Edge
-from diagrams.onprem.client import User
-from diagrams.gcp.compute import Run as CloudRunService
+from diagrams import Cluster, Diagram, Edge
 from diagrams.gcp.analytics import BigQuery
-from diagrams.gcp.ml import AIPlatform
+from diagrams.gcp.compute import Run as CloudRunService
 from diagrams.gcp.devtools import Code as DevToolCode
+from diagrams.gcp.ml import AIPlatform
+from diagrams.onprem.client import User
 
 with Diagram(
     "Time Series Forecasting Architecture",
@@ -24,16 +24,16 @@ with Diagram(
         "ranksep": "1.5",
     },
 ):
-
     cli_user = User("User")
 
     with Cluster("Google Cloud"):
-
         with Cluster("Forecasting App"):
             agent_cloud_run_app = CloudRunService("Java ADK Agent")
 
         with Cluster("MCP Toolbox for Databases"):
-            mcp_toolbox_cloud_run_service = CloudRunService("MCP Toolbox\nServer")
+            mcp_toolbox_cloud_run_service = CloudRunService(
+                "MCP Toolbox\nServer"
+            )
             forecasting_tools_on_mcp = DevToolCode("MCP Forecasting\nTools")
             (
                 mcp_toolbox_cloud_run_service
@@ -56,7 +56,11 @@ with Diagram(
             >> mcp_toolbox_cloud_run_service
         )
 
-        forecasting_tools_on_mcp >> Edge(label="Executes AI.FORECAST") >> bq_engine
+        (
+            forecasting_tools_on_mcp
+            >> Edge(label="Executes AI.FORECAST")
+            >> bq_engine
+        )
 
         bq_engine >> Edge(label="Reads Data") >> bq_dataset
         bq_engine >> Edge(label="Forecasts With") >> timesfm_model_in_bq

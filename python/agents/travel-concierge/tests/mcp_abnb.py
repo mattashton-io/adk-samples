@@ -18,12 +18,18 @@ import asyncio
 import json
 
 from dotenv import load_dotenv
-from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
+from google.adk.artifacts.in_memory_artifact_service import (
+    InMemoryArtifactService,
+)
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.tools.agent_tool import AgentTool
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
+from google.adk.tools.mcp_tool.mcp_toolset import (
+    MCPToolset,
+    StdioServerParameters,
+)
 from google.genai import types
+
 from travel_concierge.agent import root_agent
 
 load_dotenv()
@@ -113,7 +119,9 @@ async def async_main(question):
             e.function_call for e in event.content.parts if e.function_call
         ]
         function_responses = [
-            e.function_response for e in event.content.parts if e.function_response
+            e.function_response
+            for e in event.content.parts
+            if e.function_response
         ]
 
         if event.content.parts[0].text:
@@ -132,7 +140,9 @@ async def async_main(question):
                 # Detect different payloads and handle accordingly
                 application_payload = function_response.response
                 if function_name == "airbnb_search":
-                    application_payload = application_payload["result"].content[0].text
+                    application_payload = (
+                        application_payload["result"].content[0].text
+                    )
                 print(
                     f"\n[{author}]: {function_name} responds -> {application_payload}"
                 )
@@ -143,9 +153,7 @@ async def async_main(question):
 if __name__ == "__main__":
     asyncio.run(
         async_main(
-            (
-                "Find me an airbnb in San Diego, April 9th, to april 13th, no flights nor itinerary needed. "
-                "No need to confirm, simply return 5 choices, remember to include urls."
-            )
+            "Find me an airbnb in San Diego, April 9th, to april 13th, no flights nor itinerary needed. "
+            "No need to confirm, simply return 5 choices, remember to include urls."
         )
     )

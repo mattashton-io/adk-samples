@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import vertexai
 from google.adk.agents import Agent
@@ -90,7 +90,7 @@ def generate_policy_code_from_gcs(query: str, gcs_uri: str) -> dict:
 
 def _handle_policy_results(
     violations: list,
-    policy_id: Optional[str],
+    policy_id: str | None,
     version: int,
     source: str,
     asset_count: int,
@@ -99,9 +99,13 @@ def _handle_policy_results(
     """Helper to process simulation results, log execution, and format the report."""
     if policy_id:
         status = "violations_found" if violations else "success"
-        summary = f"Scanned {asset_count} assets. {len(violations)} violations found."
+        summary = (
+            f"Scanned {asset_count} assets. {len(violations)} violations found."
+        )
         # Pass the full violations list to log specific resources
-        log_policy_execution(policy_id, version, status, source, violations, summary)
+        log_policy_execution(
+            policy_id, version, status, source, violations, summary
+        )
 
     if violations:
         return {
@@ -123,7 +127,10 @@ def _handle_policy_results(
 
 
 def run_policy_from_gcs(
-    policy_code: str, gcs_uri: str, policy_id: Optional[str] = None, version: int = 0
+    policy_code: str,
+    gcs_uri: str,
+    policy_id: str | None = None,
+    version: int = 0,
 ) -> dict:
     """
     Runs a policy simulation against a metadata file or directory from GCS.
@@ -144,7 +151,11 @@ def run_policy_from_gcs(
     except Exception as e:
         if policy_id:
             log_policy_execution(
-                policy_id, version, "failure", "gcs", summary=f"GCS Access Error: {e}"
+                policy_id,
+                version,
+                "failure",
+                "gcs",
+                summary=f"GCS Access Error: {e}",
             )
         return {
             "status": "error",
@@ -152,11 +163,14 @@ def run_policy_from_gcs(
         }
 
     if is_directory:
-        all_blobs_in_dir = list(storage_client.list_blobs(bucket, prefix=blob_prefix))
+        all_blobs_in_dir = list(
+            storage_client.list_blobs(bucket, prefix=blob_prefix)
+        )
         files_to_process = [
             f"gs://{bucket_name}/{b.name}"
             for b in all_blobs_in_dir
-            if not b.name.endswith("/") and b.name[len(blob_prefix) :].count("/") == 0
+            if not b.name.endswith("/")
+            and b.name[len(blob_prefix) :].count("/") == 0
         ]
 
         if not files_to_process:
@@ -244,7 +258,10 @@ def run_policy_from_gcs(
                     "gcs",
                     summary=f"Config Error: {violations[0]['violation']}",
                 )
-            return {"status": "error", "error_message": violations[0]["violation"]}
+            return {
+                "status": "error",
+                "error_message": violations[0]["violation"],
+            }
 
         return _handle_policy_results(violations, policy_id, version, "gcs", 1)
 
@@ -260,8 +277,10 @@ def _get_remediation_with_retry(model, violation, max_retries=3):
     base_delay = 1
 
     try:
-        prompt_path = os.path.join(script_dir, "prompts", PROMPT_REMEDIATION_FILE)
-        with open(prompt_path, "r") as f:
+        prompt_path = os.path.join(
+            script_dir, "prompts", PROMPT_REMEDIATION_FILE
+        )
+        with open(prompt_path) as f:
             prompt_template = f.read()
     except FileNotFoundError:
         return {
@@ -269,7 +288,7 @@ def _get_remediation_with_retry(model, violation, max_retries=3):
             "suggestion": "Error: Remediation prompt file not found.",
         }
 
-    for i in range(max_retries):
+    for _ in range(max_retries):
         try:
             prompt = prompt_template.replace(
                 "{{VIOLATION_DETAILS}}", json.dumps(violation, indent=2)
@@ -292,7 +311,7 @@ def _get_remediation_with_retry(model, violation, max_retries=3):
     }
 
 
-def suggest_remediation(violations: List[Dict[str, Any]]) -> dict:
+def suggest_remediation(violations: list[dict[str, Any]]) -> dict:
     """Suggests remediation measures for a list of policy violations concurrently."""
     try:
         vertexai.init(project=PROJECT_ID, location=LOCATION)
@@ -327,7 +346,10 @@ def suggest_remediation(violations: List[Dict[str, Any]]) -> dict:
                     }
                 )
 
-    return {"status": "success", "remediation_suggestions": remediation_suggestions}
+    return {
+        "status": "success",
+        "remediation_suggestions": remediation_suggestions,
+    }
 
 
 def get_supported_examples() -> dict:
@@ -335,7 +357,9 @@ def get_supported_examples() -> dict:
     return DEFAULT_CORE_POLICIES
 
 
-def generate_policy_code_from_dataplex(policy_query: str, dataplex_query: str) -> dict:
+def generate_policy_code_from_dataplex(
+    policy_query: str, dataplex_query: str
+) -> dict:
     """
     Generates policy code by fetching a sample of metadata from a Dataplex query.
     """
@@ -402,7 +426,7 @@ def generate_policy_code_from_dataplex(policy_query: str, dataplex_query: str) -
 def run_policy_on_dataplex(
     policy_code: str,
     dataplex_query: str,
-    policy_id: Optional[str] = None,
+    policy_id: str | None = None,
     version: int = 0,
 ) -> dict:
     """
@@ -598,10 +622,10 @@ def generate_compliance_scorecard(source_type: str, source_target: str) -> dict:
 
 
 def export_report(
-    violations: List[Dict[str, Any]],
+    violations: list[dict[str, Any]],
     format: str = "csv",
     filename: str = "report",
-    destination: Optional[str] = None,
+    destination: str | None = None,
 ) -> dict:
     """
     Exports a list of violations to a CSV or HTML file. Optionally uploads to GCS.
@@ -647,7 +671,11 @@ def export_report(
             html += "<h2>Compliance Report</h2>"
             html += "<table><thead><tr>"
 
-            keys = list(violations[0].keys()) if violations else ["Policy", "Violation"]
+            keys = (
+                list(violations[0].keys())
+                if violations
+                else ["Policy", "Violation"]
+            )
             for k in keys:
                 html += f"<th>{k}</th>"
             html += "</tr></thead><tbody>"
@@ -683,7 +711,9 @@ def export_report(
                 if len(path_parts) > 1:
                     blob_prefix = path_parts[1]
                     if blob_prefix.endswith("/"):
-                        blob_name = f"{blob_prefix}{os.path.basename(file_path)}"
+                        blob_name = (
+                            f"{blob_prefix}{os.path.basename(file_path)}"
+                        )
                     else:
                         # If user gave full path, use it, but ensure extension matches
                         blob_name = blob_prefix
@@ -709,7 +739,10 @@ def export_report(
                 }
 
             except Exception as e:
-                return {"status": "error", "message": f"Failed to upload to GCS: {e}"}
+                return {
+                    "status": "error",
+                    "message": f"Failed to upload to GCS: {e}",
+                }
 
         return {
             "status": "success",
@@ -761,12 +794,16 @@ if mcp_toolset:
     agent_tools.append(mcp_toolset)
     logging.info("Successfully registered Dataplex MCP Toolset.")
 else:
-    logging.warning("Could not register Dataplex MCP Toolset due to auth failure.")
+    logging.warning(
+        "Could not register Dataplex MCP Toolset due to auth failure."
+    )
 
 # Load instruction from file
 try:
-    instruction_path = os.path.join(script_dir, "prompts", PROMPT_INSTRUCTION_FILE)
-    with open(instruction_path, "r") as f:
+    instruction_path = os.path.join(
+        script_dir, "prompts", PROMPT_INSTRUCTION_FILE
+    )
+    with open(instruction_path) as f:
         agent_instruction = f.read()
 except FileNotFoundError:
     logging.error("Instruction file not found. Using fallback.")

@@ -6,6 +6,7 @@ from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+
 from policy_as_code_agent import agent as agent_module
 
 # --- Mock Tools ---
@@ -103,7 +104,10 @@ async def test_conversational_policy_creation(runner: Runner) -> None:
     # Turn 1: User Greeting / Intent
     # Expect agent to ask for source.
     response_text = await send_message(
-        runner, user_id, session_id, "I want to check if table descriptions exist."
+        runner,
+        user_id,
+        session_id,
+        "I want to check if table descriptions exist.",
     )
     # We can't strictly assert the exact text, but we can check if it mentions "GCS" or "Dataplex"
     # or if the tool was NOT called yet (since we haven't given source).
@@ -128,11 +132,16 @@ async def test_conversational_policy_creation(runner: Runner) -> None:
     # 4. Report results.
 
     assert (
-        "Mock violation" in response_text or "violations found" in response_text.lower()
-    ), f"Agent response did not contain expected mock result. Got: {response_text}"
+        "Mock violation" in response_text
+        or "violations found" in response_text.lower()
+    ), (
+        f"Agent response did not contain expected mock result. Got: {response_text}"
+    )
 
 
-async def send_message(runner: Runner, user_id: str, session_id: str, text: str) -> str:
+async def send_message(
+    runner: Runner, user_id: str, session_id: str, text: str
+) -> str:
     """Helper to send a message and get the final text response."""
     input_content = types.UserContent(text)
     response_parts = []

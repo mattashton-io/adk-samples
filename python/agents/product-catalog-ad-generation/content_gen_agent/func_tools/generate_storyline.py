@@ -395,9 +395,7 @@ def _process_visual_style_guide(
 
 
 def _create_asset_sheet_prompt(
-    story_data: dict[
-        str, str | dict[str, list[dict[str, str] | str]]
-    ],
+    story_data: dict[str, str | dict[str, list[dict[str, str] | str]]],
     style_guide: str,
 ) -> str:
     """Creates the prompt for the asset sheet image."""
@@ -459,9 +457,7 @@ async def _generate_and_select_best_image(
 
 
 async def _generate_asset_sheet_image(
-    story_data: dict[
-        str, str | dict[str, list[dict[str, str] | str]]
-    ],
+    story_data: dict[str, str | dict[str, list[dict[str, str] | str]]],
     photo_filenames: list[str],
     tool_context: ToolContext,
     style_guide: str,

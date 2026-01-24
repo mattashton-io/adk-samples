@@ -5,14 +5,22 @@ This package provides Gmail functionality using the LangChain Community toolkit
 for the cookie delivery agent system.
 """
 
-from .gmail_manager import LangChainGmailManager, gmail_manager, LANGCHAIN_GMAIL_AVAILABLE
-from .email_utils import send_confirmation_email_langchain, search_gmail_messages, get_gmail_message_details
+from .email_utils import (
+    get_gmail_message_details,
+    search_gmail_messages,
+    send_confirmation_email_langchain,
+)
+from .gmail_manager import (
+    LANGCHAIN_GMAIL_AVAILABLE,
+    LangChainGmailManager,
+    gmail_manager,
+)
 
 __all__ = [
-    'LangChainGmailManager',
-    'gmail_manager', 
-    'LANGCHAIN_GMAIL_AVAILABLE',
-    'send_confirmation_email_langchain',
-    'search_gmail_messages',
-    'get_gmail_message_details'
+    "LANGCHAIN_GMAIL_AVAILABLE",
+    "LangChainGmailManager",
+    "get_gmail_message_details",
+    "gmail_manager",
+    "search_gmail_messages",
+    "send_confirmation_email_langchain",
 ]

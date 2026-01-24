@@ -174,7 +174,9 @@ class LlmAsAJudge(BasePlugin):
     ) -> dict[str, Any] | None:
         if JudgeOn.BEFORE_TOOL_CALL not in self._judge_on:
             return None
-        message = f"<tool_call>\nTool call: {tool.name}({tool_args!s})\n</tool_call>"
+        message = (
+            f"<tool_call>\nTool call: {tool.name}({tool_args!s})\n</tool_call>"
+        )
         if await self._is_unsafe(message):
             return {"error": _UNSAFE_TOOL_INPUT_MESSAGE}
 

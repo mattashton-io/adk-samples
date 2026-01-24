@@ -537,7 +537,7 @@ The JSON object captures the following information:
       {{
         "event_type": "visit",
         "description": "Snorkeling activity",
-        "address": "Ma’alaea Harbor",
+        "address": "Ma`alaea Harbor",
         "start_time": "09:00",
         "end_time": "12:00",
         "booking_required": false,

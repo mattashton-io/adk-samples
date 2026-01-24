@@ -14,8 +14,8 @@
 
 from dotenv import load_dotenv
 
+from . import agent, auth, models, services, tools, utils
+
 # Load environment variables from a .env file in the parent directory.
 # The override=True flag ensures that existing environment variables are updated.
 load_dotenv(override=True)
-
-from . import agent, auth, models, services, tools, utils  # noqa: E402, F401

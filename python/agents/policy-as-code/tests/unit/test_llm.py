@@ -31,21 +31,28 @@ def test_generate_sample_values_empty():
 
 
 def test_generate_sample_values_traversal():
+    # Define constants to fix PLR2004 (magic-value-comparison)
+    val_a = 1
+    val_b = 2
+    val_c = 3
+    val_d = 4
+    val_e = 5
+
     data = [
         {
-            "a": 1,
-            "nested": {"b": 2, "deep": {"c": 3}},
-            "list_of_objs": [{"d": 4}, {"d": 5}],
+            "a": val_a,
+            "nested": {"b": val_b, "deep": {"c": val_c}},
+            "list_of_objs": [{"d": val_d}, {"d": val_e}],
         }
     ]
 
     sample_str = generate_sample_values_str(data)
     sample_dict = json.loads(sample_str)
 
-    assert sample_dict.get("a") == 1
-    assert sample_dict.get("nested.b") == 2
-    assert sample_dict.get("nested.deep.c") == 3
-    assert sample_dict.get("list_of_objs[].d") == 4
+    assert sample_dict.get("a") == val_a
+    assert sample_dict.get("nested.b") == val_b
+    assert sample_dict.get("nested.deep.c") == val_c
+    assert sample_dict.get("list_of_objs[].d") == val_d
 
 
 def test_get_json_schema_simple():

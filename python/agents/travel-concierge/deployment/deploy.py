@@ -21,9 +21,10 @@ import vertexai
 from absl import app, flags
 from dotenv import load_dotenv
 from google.adk.sessions import VertexAiSessionService
-from travel_concierge.agent import root_agent
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from travel_concierge.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")
@@ -85,7 +86,9 @@ def send_message(
     """Send a message to the deployed agent."""
 
     session = asyncio.run(
-        session_service.create_session(app_name=resource_id, user_id="traveler0115")
+        session_service.create_session(
+            app_name=resource_id, user_id="traveler0115"
+        )
     )
 
     remote_agent = agent_engines.get(resource_id)
@@ -101,15 +104,22 @@ def send_message(
 
 
 def main(argv: list[str]) -> None:
-
     load_dotenv()
     env_vars = {}
 
     project_id = (
-        FLAGS.project_id if FLAGS.project_id else os.getenv("GOOGLE_CLOUD_PROJECT")
+        FLAGS.project_id
+        if FLAGS.project_id
+        else os.getenv("GOOGLE_CLOUD_PROJECT")
     )
-    location = FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
-    bucket = FLAGS.bucket if FLAGS.bucket else os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
+    location = (
+        FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
+    )
+    bucket = (
+        FLAGS.bucket
+        if FLAGS.bucket
+        else os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
+    )
     # Variables for Travel Concierge from .env
     initial_states_path = (
         FLAGS.initial_states_path
@@ -137,10 +147,14 @@ def main(argv: list[str]) -> None:
         print("Missing required environment variable: GOOGLE_CLOUD_LOCATION")
         return
     elif not bucket:
-        print("Missing required environment variable: GOOGLE_CLOUD_STORAGE_BUCKET")
+        print(
+            "Missing required environment variable: GOOGLE_CLOUD_STORAGE_BUCKET"
+        )
         return
     elif not initial_states_path:
-        print("Missing required environment variable: TRAVEL_CONCIERGE_SCENARIO")
+        print(
+            "Missing required environment variable: TRAVEL_CONCIERGE_SCENARIO"
+        )
         return
     elif not map_key:
         print("Missing required environment variable: GOOGLE_PLACES_API_KEY")

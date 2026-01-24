@@ -50,7 +50,9 @@ def get_content_from_gcs_for_schema(gcs_uri: str) -> dict:
 
         if is_directory:
             blobs = list(
-                storage_client.list_blobs(bucket, prefix=blob_prefix, max_results=10)
+                storage_client.list_blobs(
+                    bucket, prefix=blob_prefix, max_results=10
+                )
             )
             files_in_dir = [
                 f"gs://{bucket_name}/{b.name}"
@@ -75,7 +77,9 @@ def get_content_from_gcs_for_schema(gcs_uri: str) -> dict:
         }
 
     try:
-        bucket_name, blob_name = schema_gcs_uri.replace("gs://", "").split("/", 1)
+        bucket_name, blob_name = schema_gcs_uri.replace("gs://", "").split(
+            "/", 1
+        )
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         content = blob.download_as_string().decode("utf-8")

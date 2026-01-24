@@ -156,9 +156,7 @@ class GuidelineService:
             return parsed_guideline
         except Exception as e:
             logger.error(f"Error during Gemini processing: {e}")
-            raise Exception(
-                f"Failed to process document with AI: {str(e)}"
-            ) from e
+            raise Exception(f"Failed to process document with AI: {e!s}") from e
 
 
 # --- Eval Service ---
@@ -943,9 +941,7 @@ def _get_mime_type(file_path: str) -> str:
     p = pathlib.Path(file_path)
     f = os.path.basename(file_path)
     file_name = (
-        f
-        if "." in f
-        else str(p.parents[0]).replace(f"{str(p.parents[1])}/", "")
+        f if "." in f else str(p.parents[0]).replace(f"{p.parents[1]!s}/", "")
     )
     logger.info(f"Determining MIME type for file: {file_name}")
     mime_type, _ = mimetypes.guess_type(file_name)

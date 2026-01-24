@@ -5,7 +5,12 @@ import re
 import vertexai
 from vertexai.generative_models import GenerativeModel
 
-from ..config import GEMINI_MODEL_PRO, LOCATION, PROJECT_ID, PROMPT_CODE_GENERATION_FILE
+from ..config import (
+    GEMINI_MODEL_PRO,
+    LOCATION,
+    PROJECT_ID,
+    PROMPT_CODE_GENERATION_FILE,
+)
 from .json_tools import traverse
 
 script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,7 +44,11 @@ def get_json_schema_from_content(content: str):
         if content.strip().startswith("["):
             data = json.loads(content)
         else:
-            data = [json.loads(line) for line in content.splitlines() if line.strip()]
+            data = [
+                json.loads(line)
+                for line in content.splitlines()
+                if line.strip()
+            ]
     except json.JSONDecodeError:
         return {}
 
@@ -79,7 +88,9 @@ def get_json_schema_from_content(content: str):
                     return []
                 merged_item_schema = item_schemas[0]
                 for item_schema in item_schemas[1:]:
-                    merged_item_schema = merge_schemas(merged_item_schema, item_schema)
+                    merged_item_schema = merge_schemas(
+                        merged_item_schema, item_schema
+                    )
                 return [merged_item_schema]
             else:
                 return []
@@ -90,7 +101,9 @@ def get_json_schema_from_content(content: str):
         return generate_schema_from_obj(data)
 
     all_schemas = [
-        generate_schema_from_obj(item) for item in data if isinstance(item, dict)
+        generate_schema_from_obj(item)
+        for item in data
+        if isinstance(item, dict)
     ]
     if not all_schemas:
         return {}
@@ -102,7 +115,9 @@ def get_json_schema_from_content(content: str):
     return final_schema
 
 
-def llm_generate_policy_code(query: str, schema: dict, metadata_sample: list) -> str:
+def llm_generate_policy_code(
+    query: str, schema: dict, metadata_sample: list
+) -> str:
     """Generates a Python function that evaluates a policy query using Vertex AI."""
     try:
         vertexai.init(project=PROJECT_ID, location=LOCATION)
@@ -115,14 +130,14 @@ def llm_generate_policy_code(query: str, schema: dict, metadata_sample: list) ->
 
     # Load the prompt from the file
     try:
-        prompt_path = os.path.join(script_dir, "prompts", PROMPT_CODE_GENERATION_FILE)
+        prompt_path = os.path.join(
+            script_dir, "prompts", PROMPT_CODE_GENERATION_FILE
+        )
 
-        with open(prompt_path, "r") as f:
+        with open(prompt_path) as f:
             prompt_template = f.read()
     except FileNotFoundError:
-        return (
-            f"# Error: Prompt file not found at prompts/{PROMPT_CODE_GENERATION_FILE}"
-        )
+        return f"# Error: Prompt file not found at prompts/{PROMPT_CODE_GENERATION_FILE}"
 
     # Replace placeholders in the prompt
     prompt = prompt_template.replace("{{INFERRED_JSON_SCHEMA}}", schema_str)

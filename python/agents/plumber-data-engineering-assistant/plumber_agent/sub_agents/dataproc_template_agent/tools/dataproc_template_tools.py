@@ -74,25 +74,34 @@ def get_transformation_sql(gcs_url: str) -> dict[str, str]:
         model = GenerativeModel(MODEL)
 
         if not blob.exists():
-            return {"status": "failure - Object not available at input path", "sql": ""}
+            return {
+                "status": "failure - Object not available at input path",
+                "sql": "",
+            }
 
         file_bytes = blob.download_as_bytes()
 
         if file_type == "csv":
             file_content = file_bytes.decode("utf-8")
-            response = model.generate_content([STTM_PARSING_INSTRUCTIONS, file_content])
+            response = model.generate_content(
+                [STTM_PARSING_INSTRUCTIONS, file_content]
+            )
         else:
             image = Image.from_bytes(file_bytes)
-            response = model.generate_content([STTM_PARSING_INSTRUCTIONS, image])
+            response = model.generate_content(
+                [STTM_PARSING_INSTRUCTIONS, image]
+            )
 
         output_sql = response.text.replace("```sql", "").replace("```", "")
 
         return {"status": "success", "sql": output_sql}
     except Exception as err:  # pylint: disable=broad-exception-caught
         logger.error(
-            "An error occurred in get_transformation_sql: %s", err, exc_info=True
+            "An error occurred in get_transformation_sql: %s",
+            err,
+            exc_info=True,
         )
-        return {"status": f"failure - {str(err)}", "sql": ""}
+        return {"status": f"failure - {err!s}", "sql": ""}
 
 
 # TOOL TO FETCH THE RELEAVANT DATAPROC TEMPLATE BASED ON USER INPUT
@@ -263,7 +272,9 @@ def run_dataproc_template(
                 " --labels=submitted_from=plumber"
             )
         else:
-            my_env["OPT_SERVICE_ACCOUNT_NAME"] = "--labels=submitted_from=plumber"
+            my_env["OPT_SERVICE_ACCOUNT_NAME"] = (
+                "--labels=submitted_from=plumber"
+            )
 
         # DEFINING THE RUN COMMANDS FOR DATAPROC_TEMPLATE
         run_cmd = ["./bin/start.sh", "--", f"--template={template_name}"]
@@ -299,7 +310,7 @@ def run_dataproc_template(
 
         return {
             "status": "failed",
-            "comment": f"Job Failed - 1 {str(cmd_err.stderr)}",
+            "comment": f"Job Failed - 1 {cmd_err.stderr!s}",
             "run_cmd": run_cmd,
         }
     except Exception as err:  # pylint: disable=broad-exception-caught
@@ -312,6 +323,6 @@ def run_dataproc_template(
 
         return {
             "status": "failed",
-            "comment": f"Job Failed - 2 {str(err)}",
+            "comment": f"Job Failed - 2 {err!s}",
             "run_cmd": run_cmd,
         }

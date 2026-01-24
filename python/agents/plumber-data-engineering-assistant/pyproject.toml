@@ -10,11 +10,12 @@ authors = [
     { name = "Aman Usmani", email = "amanusmani@google.com" },
     { name = "Pradeep Kumar K", email = "pradeepkpk@google.com" },
     { name = "Bhabani Mahapatra ", email = "bhabaniranjan@google.com" }
-    ]
+]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.12",
 ]
+license = { text = "Apache-2.0" }
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 
@@ -22,7 +23,7 @@ dependencies = [
     "beautifulsoup4==4.13.4",
     "dbt-bigquery==1.10.1",
     "fastapi==0.116.1",
-    "uvicorn==0.35.0", # For running FastAPI
+    "uvicorn==0.35.0",
     "GitPython==3.1.45",
     "google-adk==1.16.0",
     "google-api-python-client==2.177.0",
@@ -43,8 +44,9 @@ lint = [
     "codespell>=2.2.0",
 ]
 
+[dependency-groups]
 dev = [
-    "plumber[lint]", # Installs all linting dependencies
+    "plumber[lint]",
     "ipykernel>=6.29.5",
     "ipython>=8.36.0",
     "pytest>=8.3.5",
@@ -54,32 +56,14 @@ dev = [
     "deptry>=0.23.0",
 ]
 
-[build-system]
-requires = [
- "setuptools>=80.9.0",
- "wheel"
-]
-build-backend = "setuptools.build_meta"
-
 [tool.ruff]
-line-length = 100
-target-version = "py312" # Matching your requires-python
+extend = "../../../pyproject.toml"
 
 [tool.ruff.lint]
-select = [
-    "E",  # pycodestyle
-    "F",  # pyflakes
-    "W",  # pycodestyle warnings
-    "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
-    "UP", # pyupgrade
-    "RUF",# ruff specific rules
-]
-ignore = ["E501", "C901"] # ignore line too long, too complex
+ignore = ["C901", "PLR0912", "PLR0915"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["plumber"] # Set to your project's name
+known-first-party = ["plumber"]
 
 [tool.mypy]
 disallow_untyped_calls = true
@@ -110,5 +94,10 @@ markers = [
     "infra_ready: marks tests as requiring cloud infra to be ready",
 ]
 
-[tool.agent_packs]
-template = "adk"
+[tool.agent-starter-pack.settings]
+agent_directory = "plumber"
+deployment_targets = ["agent_engine", "cloud_run"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

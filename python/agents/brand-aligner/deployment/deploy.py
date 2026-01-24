@@ -22,7 +22,7 @@ from vertexai import agent_engines
 
 # Add the project root to sys.path to allow importing brand_aligner_agent
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from brand_aligner_agent.agent import root_agent  # noqa: E402
+from brand_aligner_agent.agent import root_agent
 
 load_dotenv(override=True)
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
@@ -48,9 +48,9 @@ if os.path.exists(".agent_engine_resource.json"):
 else:
     existing_resource_name = None
 
-common_args = dict(
-    agent_engine=adk_app,
-    extra_packages=[
+common_args = {
+    "agent_engine": adk_app,
+    "extra_packages": [
         "brand_aligner_agent/__init__.py",
         "brand_aligner_agent/agent.py",
         "brand_aligner_agent/auth.py",
@@ -59,7 +59,7 @@ common_args = dict(
         "brand_aligner_agent/tools.py",
         "brand_aligner_agent/utils.py",
     ],
-    requirements=[
+    "requirements": [
         "cloudpickle>=3.1.2",
         "fastapi>=0.121.0",
         "google-adk==1.16.0",
@@ -74,7 +74,7 @@ common_args = dict(
         "pandas>=2.3.2",
         "pydantic==2.12.4",
     ],
-    env_vars={
+    "env_vars": {
         "PROJECT_ID": PROJECT_ID,
         "LOCATION": LOCATION,
         "GOOGLE_GENAI_USE_VERTEXAI": os.getenv(
@@ -95,10 +95,10 @@ common_args = dict(
         "OAUTH_CLIENT_SECRET": os.getenv("OAUTH_CLIENT_SECRET"),
         "MODE": "production",
     },
-    gcs_dir_name="build-dev",
-    display_name="Brand Aligner Agent",
-    description="Searches for and evaluates visual assets (images/videos) against brand guidelines to ensure compliance and stylistic alignment.",
-)
+    "gcs_dir_name": "build-dev",
+    "display_name": "Brand Aligner Agent",
+    "description": "Searches for and evaluates visual assets (images/videos) against brand guidelines to ensure compliance and stylistic alignment.",
+}
 
 if existing_resource_name:
     print(f"Updating existing Agent Engine resource: {existing_resource_name}")

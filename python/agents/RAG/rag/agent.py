@@ -14,24 +14,27 @@
 
 import os
 import uuid
-from google.adk.agents import Agent
-from google.adk.tools.retrieval.vertex_ai_rag_retrieval import VertexAiRagRetrieval
-from vertexai.preview import rag
-from openinference.instrumentation import using_session
-from rag.tracing import instrument_adk_with_arize
-
-_ = instrument_adk_with_arize()
 
 from dotenv import load_dotenv
+from google.adk.agents import Agent
+from google.adk.tools.retrieval.vertex_ai_rag_retrieval import (
+    VertexAiRagRetrieval,
+)
+from openinference.instrumentation import using_session
+from vertexai.preview import rag
+
+from rag.tracing import instrument_adk_with_arize
+
 from .prompts import return_instructions_root
 
 load_dotenv()
+_ = instrument_adk_with_arize()
 
 
 ask_vertex_retrieval = VertexAiRagRetrieval(
-    name='retrieve_rag_documentation',
+    name="retrieve_rag_documentation",
     description=(
-        'Use this tool to retrieve documentation and reference materials for the question from the RAG corpus,'
+        "Use this tool to retrieve documentation and reference materials for the question from the RAG corpus,"
     ),
     rag_resources=[
         rag.RagResource(
@@ -47,10 +50,10 @@ ask_vertex_retrieval = VertexAiRagRetrieval(
 
 with using_session(session_id=uuid.uuid4()):
     root_agent = Agent(
-        model='gemini-2.0-flash-001',
-        name='ask_rag_agent',
+        model="gemini-2.0-flash-001",
+        name="ask_rag_agent",
         instruction=return_instructions_root(),
         tools=[
             ask_vertex_retrieval,
-        ]
+        ],
     )

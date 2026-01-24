@@ -13,10 +13,10 @@ def instrument_adk_with_arize() -> trace.Tracer:
     """Instrument the ADK with Arize."""
 
     if os.getenv("ARIZE_SPACE_ID") is None:
-        warnings.warn("ARIZE_SPACE_ID is not set")
+        warnings.warn("ARIZE_SPACE_ID is not set", stacklevel=2)
         return None
     if os.getenv("ARIZE_API_KEY") is None:
-        warnings.warn("ARIZE_API_KEY is not set")
+        warnings.warn("ARIZE_API_KEY is not set", stacklevel=2)
         return None
 
     tracer_provider = register(

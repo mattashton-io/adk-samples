@@ -31,9 +31,9 @@ def analyze_codebase(directory: str) -> dict:
         if os.path.isfile(file):
             codebase_context += f"""- **{file}**:"""
             try:
-                with open(file, "r", encoding="utf-8") as f:
+                with open(file, encoding="utf-8") as f:
                     codebase_context += f.read()
             except UnicodeDecodeError:
-                with open(file, "r", encoding="latin-1") as f:
+                with open(file, encoding="latin-1") as f:
                     codebase_context += f.read()
     return {"codebase_context": codebase_context}

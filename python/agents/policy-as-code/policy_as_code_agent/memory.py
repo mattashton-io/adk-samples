@@ -1,7 +1,7 @@
 import datetime
 import logging
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import vertexai
 from google.api_core.exceptions import FailedPrecondition
@@ -41,7 +41,7 @@ else:
 COLLECTION_NAME = FIRESTORE_COLLECTION_POLICIES
 
 
-def _get_embedding(text: str) -> List[float]:
+def _get_embedding(text: str) -> list[float]:
     """Generates a vector embedding for the given text using Vertex AI."""
     try:
         vertexai.init(project=PROJECT_ID, location=LOCATION)
@@ -57,7 +57,9 @@ def _policy_to_dict(doc) -> dict:
     """Helper to convert a Firestore document to a dictionary."""
     data = doc.to_dict()
     # Convert Firestore timestamps to ISO strings for JSON serialization
-    if "created_at" in data and isinstance(data["created_at"], datetime.datetime):
+    if "created_at" in data and isinstance(
+        data["created_at"], datetime.datetime
+    ):
         data["created_at"] = data["created_at"].isoformat()
     if "last_used" in data and isinstance(data["last_used"], datetime.datetime):
         data["last_used"] = data["last_used"].isoformat()
@@ -93,10 +95,13 @@ def get_active_core_policies() -> dict:
                 "policies": [],  # Agent logic will fill this with defaults if needed
             }
     except Exception as e:
-        return {"status": "error", "message": f"Error fetching core policies: {e}"}
+        return {
+            "status": "error",
+            "message": f"Error fetching core policies: {e}",
+        }
 
 
-def save_core_policies(policies: List[str]) -> dict:
+def save_core_policies(policies: list[str]) -> dict:
     """Saves or overwrites the list of core policies in Firestore."""
     if not db:
         return {"status": "error", "message": "Memory bank is disabled."}
@@ -111,7 +116,10 @@ def save_core_policies(policies: List[str]) -> dict:
             "policies": policies,
         }
     except Exception as e:
-        return {"status": "error", "message": f"Failed to save core policies: {e}"}
+        return {
+            "status": "error",
+            "message": f"Failed to save core policies: {e}",
+        }
 
 
 def add_core_policy(policy: str) -> dict:
@@ -170,16 +178,19 @@ def remove_core_policy(policy: str) -> dict:
             "policies": policies,
         }
     except Exception as e:
-        return {"status": "error", "message": f"Failed to remove core policy: {e}"}
+        return {
+            "status": "error",
+            "message": f"Failed to remove core policy: {e}",
+        }
 
 
 def find_policy_in_memory(
     query: str,
     source: str,
     version: str = "latest",
-    author: Optional[str] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
+    author: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> dict:
     """
     Finds a similar policy in Firestore using Vector Search.
@@ -201,7 +212,10 @@ def find_policy_in_memory(
 
     query_embedding = _get_embedding(query)
     if not query_embedding:
-        return {"status": "error", "message": "Failed to generate embedding for query."}
+        return {
+            "status": "error",
+            "message": "Failed to generate embedding for query.",
+        }
 
     # Base collection reference
     policies_ref = db.collection(COLLECTION_NAME)
@@ -236,7 +250,10 @@ def find_policy_in_memory(
             }
         return {"status": "error", "message": f"Vector search failed: {e}"}
     except Exception as e:
-        return {"status": "error", "message": f"An unexpected error occurred: {e}"}
+        return {
+            "status": "error",
+            "message": f"An unexpected error occurred: {e}",
+        }
 
     if not results:
         return {"status": "not_found", "message": "No policies found."}
@@ -256,7 +273,9 @@ def find_policy_in_memory(
     filtered_matches = [m for m in matches if m.get("source") == source]
 
     if author:
-        filtered_matches = [m for m in filtered_matches if m.get("author") == author]
+        filtered_matches = [
+            m for m in filtered_matches if m.get("author") == author
+        ]
 
     if start_date and end_date:
         try:
@@ -267,7 +286,9 @@ def find_policy_in_memory(
             filtered_matches = [
                 m
                 for m in filtered_matches
-                if start <= datetime.datetime.fromisoformat(m["created_at"]) <= end
+                if start
+                <= datetime.datetime.fromisoformat(m["created_at"])
+                <= end
             ]
         except Exception:
             pass  # Ignore date errors in filter
@@ -309,7 +330,7 @@ def save_policy_to_memory(
     policy_code: str,
     source: str,
     author: str = "user",
-    policy_id: Optional[str] = None,
+    policy_id: str | None = None,
 ) -> dict:
     """
     Saves a new policy or a new version of an existing policy to Firestore.
@@ -334,10 +355,14 @@ def save_policy_to_memory(
     if policy_id:
         # Check for existing versions
         existing_versions = list(
-            db.collection(COLLECTION_NAME).where("policy_id", "==", policy_id).stream()
+            db.collection(COLLECTION_NAME)
+            .where("policy_id", "==", policy_id)
+            .stream()
         )
         if existing_versions:
-            versions = [d.get("version") for d in existing_versions if d.get("version")]
+            versions = [
+                d.get("version") for d in existing_versions if d.get("version")
+            ]
             if versions:
                 new_version = max(versions) + 1
         else:
@@ -383,7 +408,9 @@ def list_policy_versions(policy_id: str) -> dict:
 
     try:
         docs = (
-            db.collection(COLLECTION_NAME).where("policy_id", "==", policy_id).stream()
+            db.collection(COLLECTION_NAME)
+            .where("policy_id", "==", policy_id)
+            .stream()
         )
         versions = []
         for doc in docs:
@@ -443,13 +470,17 @@ def prune_memory(days_to_keep: int = 30) -> dict:
             "message": "Memory bank is disabled. To enable long-term procedural memory, set ENABLE_MEMORY_BANK=True in .env and configure Firestore. See docs/MEMORY_INTEGRATION.md for details.",
         }
 
-    cutoff_date = datetime.datetime.now() - datetime.timedelta(days=days_to_keep)
+    cutoff_date = datetime.datetime.now() - datetime.timedelta(
+        days=days_to_keep
+    )
 
     try:
         # Query for policies accessed before the cutoff
         # Note: Requires an index on 'last_used'
         docs = (
-            db.collection(COLLECTION_NAME).where("last_used", "<", cutoff_date).stream()
+            db.collection(COLLECTION_NAME)
+            .where("last_used", "<", cutoff_date)
+            .stream()
         )
 
         deleted_count = 0
@@ -474,11 +505,16 @@ def prune_memory(days_to_keep: int = 30) -> dict:
 
 
 def rate_policy(
-    policy_id: str, version: int, rating: int, feedback: Optional[str] = None
+    policy_id: str, version: int, rating: int, feedback: str | None = None
 ) -> dict:
     """Rates a policy and adds feedback in Firestore."""
-    if not 1 <= rating <= 5:
-        return {"status": "error", "message": "Rating must be between 1 and 5."}
+    max_rating = 5
+
+    if not 1 <= rating <= max_rating:
+        return {
+            "status": "error",
+            "message": f"Rating must be between 1 and {max_rating}.",
+        }
 
     if not db:
         return {
@@ -521,7 +557,7 @@ def log_policy_execution(
     version: int,
     status: str,
     source: str,
-    violations: Optional[List[Dict[str, Any]]] = None,
+    violations: list[dict[str, Any]] | None = None,
     summary: str = "",
 ) -> dict:
     """
@@ -563,7 +599,9 @@ def log_policy_execution(
         "violation_count": violation_count,
         "source": source,
         "summary": summary,
-        "violated_resources": list(violated_resources),  # Store as array for querying
+        "violated_resources": list(
+            violated_resources
+        ),  # Store as array for querying
     }
 
     try:
@@ -604,7 +642,7 @@ def log_policy_execution(
 def analyze_execution_history(
     query_type: str = "summary",
     days: int = 30,
-    resource_name: Optional[str] = None,
+    resource_name: str | None = None,
 ) -> dict:
     """
     Performs advanced analysis on policy execution history.
@@ -621,7 +659,7 @@ def analyze_execution_history(
         }
 
     # Ensure cutoff_date is timezone-aware (UTC) to match Firestore timestamps
-    cutoff_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+    cutoff_date = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
         days=days
     )
 
@@ -641,7 +679,9 @@ def analyze_execution_history(
                 "timestamp", ">=", cutoff_date
             )
             # Order by timestamp descending for efficiency
-            query = query.order_by("timestamp", direction=firestore.Query.DESCENDING)
+            query = query.order_by(
+                "timestamp", direction=firestore.Query.DESCENDING
+            )
 
             results = query.stream()
 
@@ -659,7 +699,8 @@ def analyze_execution_history(
                 # Check if any violated resource string contains the search term
                 # We use a generator expression for efficiency
                 if any(
-                    resource_name_lower in str(r).lower() for r in violated_resources
+                    resource_name_lower in str(r).lower()
+                    for r in violated_resources
                 ):
                     if "timestamp" in data and isinstance(
                         data["timestamp"], datetime.datetime
@@ -690,7 +731,9 @@ def analyze_execution_history(
                             .stream()
                         )
                         if docs:
-                            policy_cache[cache_key] = docs[0].to_dict().get("query")
+                            policy_cache[cache_key] = (
+                                docs[0].to_dict().get("query")
+                            )
                         else:
                             policy_cache[cache_key] = None
                     except Exception:
@@ -711,7 +754,8 @@ def analyze_execution_history(
             query = (
                 db.collection(COLLECTION_NAME)
                 .order_by(
-                    "total_violations_detected", direction=firestore.Query.DESCENDING
+                    "total_violations_detected",
+                    direction=firestore.Query.DESCENDING,
                 )
                 .limit(10)
             )
@@ -725,7 +769,9 @@ def analyze_execution_history(
                         {
                             "policy_id": p.get("policy_id"),
                             "query": p.get("query"),
-                            "total_violations": p.get("total_violations_detected"),
+                            "total_violations": p.get(
+                                "total_violations_detected"
+                            ),
                             "last_run": p.get("last_run"),
                         }
                     )
@@ -748,7 +794,9 @@ def analyze_execution_history(
 
                 for res in violated_resources:
                     res_str = str(res)
-                    resource_counts[res_str] = resource_counts.get(res_str, 0) + 1
+                    resource_counts[res_str] = (
+                        resource_counts.get(res_str, 0) + 1
+                    )
 
             # Sort by count descending
             sorted_resources = sorted(
@@ -781,7 +829,10 @@ def analyze_execution_history(
 
                 day_str = ts.strftime("%Y-%m-%d")
                 if day_str not in daily_stats:
-                    daily_stats[day_str] = {"executions": 0, "violations_detected": 0}
+                    daily_stats[day_str] = {
+                        "executions": 0,
+                        "violations_detected": 0,
+                    }
 
                 daily_stats[day_str]["executions"] += 1
                 daily_stats[day_str]["violations_detected"] += data.get(
@@ -795,7 +846,7 @@ def analyze_execution_history(
 
 
 def get_execution_history(
-    days: int = 7, status: Optional[str] = None, policy_id: Optional[str] = None
+    days: int = 7, status: str | None = None, policy_id: str | None = None
 ) -> dict:
     """
     Retrieves policy execution history from Firestore.
@@ -812,7 +863,7 @@ def get_execution_history(
         }
 
     # Ensure cutoff_date is timezone-aware (UTC) to match Firestore timestamps
-    cutoff_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+    cutoff_date = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
         days=days
     )
 
@@ -826,7 +877,9 @@ def get_execution_history(
         )
 
         # Order by timestamp descending
-        query = query.order_by("timestamp", direction=firestore.Query.DESCENDING)
+        query = query.order_by(
+            "timestamp", direction=firestore.Query.DESCENDING
+        )
 
         results = query.stream()
         history = []

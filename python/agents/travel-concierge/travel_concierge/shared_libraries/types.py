@@ -14,8 +14,6 @@
 
 """Common data schema and types for travel-concierge agents."""
 
-from typing import Optional, Union
-
 from google.genai import types
 from pydantic import BaseModel, Field
 
@@ -81,7 +79,9 @@ class AirportEvent(BaseModel):
 
     city_name: str = Field(description="Name of the departure city")
     airport_code: str = Field(description="IATA code of the departure airport")
-    timestamp: str = Field(description="ISO 8601 departure or arrival date and time")
+    timestamp: str = Field(
+        description="ISO 8601 departure or arrival date and time"
+    )
 
 
 class Flight(BaseModel):
@@ -97,7 +97,9 @@ class Flight(BaseModel):
     )
     airline_logo: str = Field(description="Airline logo location")
     price_in_usd: int = Field(description="Flight price in US dollars")
-    number_of_stops: int = Field(description="Number of stops during the flight")
+    number_of_stops: int = Field(
+        description="Number of stops during the flight"
+    )
 
 
 class FlightsSelection(BaseModel):
@@ -111,8 +113,12 @@ class Destination(BaseModel):
 
     name: str = Field(description="A Destination's Name")
     country: str = Field(description="The Destination's Country Name")
-    image: str = Field(description="verified URL to an image of the destination")
-    highlights: str = Field(description="Short description highlighting key features")
+    image: str = Field(
+        description="verified URL to an image of the destination"
+    )
+    highlights: str = Field(
+        description="Short description highlighting key features"
+    )
     rating: str = Field(description="Numerical rating (e.g., 4.5)")
 
 
@@ -138,10 +144,14 @@ class POI(BaseModel):
     review_ratings: str = Field(
         description="Numerical representation of rating (e.g. 4.8 , 3.0 , 1.0 etc)"
     )
-    highlights: str = Field(description="Short description highlighting key features")
-    image_url: str = Field(description="verified URL to an image of the destination")
-    map_url: Optional[str] = Field(description="Verified URL to Google Map")
-    place_id: Optional[str] = Field(description="Google Map place_id")
+    highlights: str = Field(
+        description="Short description highlighting key features"
+    )
+    image_url: str = Field(
+        description="verified URL to an image of the destination"
+    )
+    map_url: str | None = Field(description="Verified URL to Google Map")
+    place_id: str | None = Field(description="Google Map place_id")
 
 
 class POISuggestions(BaseModel):
@@ -161,7 +171,7 @@ class AttractionEvent(BaseModel):
     start_time: str = Field(description="Time in HH:MM format, e.g. 16:00")
     end_time: str = Field(description="Time in HH:MM format, e.g. 16:00")
     booking_required: bool = Field(default=False)
-    price: Optional[str] = Field(description="Some events may cost money")
+    price: str | None = Field(description="Some events may cost money")
 
 
 class FlightEvent(BaseModel):
@@ -177,8 +187,8 @@ class FlightEvent(BaseModel):
     seat_number: str = Field(description="Seat Row and Position, e.g. 32A")
     departure_time: str = Field(description="Time in HH:MM format, e.g. 16:00")
     arrival_time: str = Field(description="Time in HH:MM format, e.g. 20:00")
-    price: Optional[str] = Field(description="Total air fare")
-    booking_id: Optional[str] = Field(
+    price: str | None = Field(description="Total air fare")
+    booking_id: str | None = Field(
         description="Booking Reference ID, e.g LMN-012-STU"
     )
 
@@ -187,14 +197,18 @@ class HotelEvent(BaseModel):
     """A Hotel Booking in the itinerary."""
 
     event_type: str = Field(default="hotel")
-    description: str = Field(description="A name, title or a description of the hotel")
+    description: str = Field(
+        description="A name, title or a description of the hotel"
+    )
     address: str = Field(description="Full address of the attraction")
     check_in_time: str = Field(description="Time in HH:MM format, e.g. 16:00")
     check_out_time: str = Field(description="Time in HH:MM format, e.g. 15:30")
     room_selection: str = Field()
     booking_required: bool = Field(default=True)
-    price: Optional[str] = Field(description="Total hotel price including all nights")
-    booking_id: Optional[str] = Field(
+    price: str | None = Field(
+        description="Total hotel price including all nights"
+    )
+    booking_id: str | None = Field(
         description="Booking Reference ID, e.g ABCD12345678"
     )
 
@@ -206,7 +220,7 @@ class ItineraryDay(BaseModel):
         description="Identify which day of the trip this represents, e.g. 1, 2, 3... etc."
     )
     date: str = Field(description="The Date this day YYYY-MM-DD format")
-    events: list[Union[FlightEvent, HotelEvent, AttractionEvent]] = Field(
+    events: list[FlightEvent | HotelEvent | AttractionEvent] = Field(
         default=[], description="The list of events for the day"
     )
 

@@ -4,7 +4,7 @@ It includes functions for listing, getting details of, and canceling Dataflow jo
 """
 
 import logging
-from typing import Optional
+from http import HTTPStatus
 
 from google.auth import default
 from googleapiclient.discovery import build
@@ -13,18 +13,22 @@ from googleapiclient.errors import HttpError
 # --- Configuration and API Client Setup ---
 logger = logging.getLogger("plumber-agent")
 try:
-    credentials, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    credentials, _ = default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
     dataflow_service = build("dataflow", "v1b3", credentials=credentials)
 except Exception as e:
     logger.error("An error occurred: %s", e, exc_info=True)
-    raise RuntimeError(f"Failed to initialize Google API clients. Error: {e}") from e
+    raise RuntimeError(
+        f"Failed to initialize Google API clients. Error: {e}"
+    ) from e
 
 
 # ===== Dataflow Job and Template Management Tools =====
 
 
 def list_dataflow_jobs(
-    project_id: str, location: Optional[str] = None, status: Optional[str] = None
+    project_id: str, location: str | None = None, status: str | None = None
 ) -> dict[str, str]:
     """
     Lists up to 30 of the most recent Google Cloud Dataflow jobs for a given project.
@@ -72,7 +76,8 @@ def list_dataflow_jobs(
             jobs = [
                 job
                 for job in jobs
-                if job.get("currentState", "").lower() == f"job_state_{status.lower()}"
+                if job.get("currentState", "").lower()
+                == f"job_state_{status.lower()}"
             ]
 
         search_scope = (
@@ -171,7 +176,9 @@ def get_dataflow_job_details(
         )
         report += "\nJob Metrics:\n"
         for metric in metrics.get("metrics", []):
-            report += f"- {metric['name']['name']}: {metric.get('scalar', 'N/A')}\n"
+            report += (
+                f"- {metric['name']['name']}: {metric.get('scalar', 'N/A')}\n"
+            )
 
         return {
             "status": "success",
@@ -179,7 +186,7 @@ def get_dataflow_job_details(
         }
     except HttpError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        if e.status_code == 404:
+        if e.status_code == HTTPStatus.NOT_FOUND:
             error_message = (
                 f"Job with ID '{job_id}' not found in location '{location}'. "
                 "Please verify the job ID and its location. You can use 'list_dataflow_jobs' "
@@ -195,7 +202,9 @@ def get_dataflow_job_details(
         }
 
 
-def cancel_dataflow_job(project_id: str, job_id: str, location: str) -> dict[str, str]:
+def cancel_dataflow_job(
+    project_id: str, job_id: str, location: str
+) -> dict[str, str]:
     """
     Cancels a running Google Cloud Dataflow job.
 
@@ -249,7 +258,7 @@ def cancel_dataflow_job(project_id: str, job_id: str, location: str) -> dict[str
         }
     except HttpError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        if e.status_code == 404:
+        if e.status_code == HTTPStatus.NOT_FOUND:
             error_message = (
                 f"Job with ID '{job_id}' not found in location '{location}'. "
                 "Please verify the job ID and its location. Use "
@@ -259,7 +268,10 @@ def cancel_dataflow_job(project_id: str, job_id: str, location: str) -> dict[str
                 "status": "error",
                 "error_message": error_message,
             }
-        if e.status_code == 400 and "immutable" in e.reason.lower():
+        if (
+            e.status_code == HTTPStatus.BAD_REQUEST
+            and "immutable" in e.reason.lower()
+        ):
             error_message = (
                 f"Job '{job_id}' in '{location}' is already in a terminal "
                 "state and cannot be cancelled."

@@ -42,7 +42,6 @@ user_inputs = [
 ]
 
 for user_input in user_inputs:
-
     DATA = {
         "session_id": "session_2449",
         "app_name": "travel_concierge",
@@ -117,7 +116,9 @@ for user_input in user_inputs:
                     # an application to act according to which agent / tool the response originated from.
                     match function_name:
                         case "place_agent":
-                            print("\n[app]: To render a carousel of destinations")
+                            print(
+                                "\n[app]: To render a carousel of destinations"
+                            )
                         case "map_tool":
                             print("\n[app]: To render a map of pois")
                         case "flight_selection_agent":

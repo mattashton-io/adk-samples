@@ -3,7 +3,7 @@
 import datetime
 import logging
 import os
-from typing import Any, Optional
+from typing import Any
 
 from dotenv import load_dotenv
 from google.api_core.exceptions import GoogleAPICallError
@@ -37,7 +37,7 @@ def submit_pyspark_job(
     cluster_name: str,
     main_python_file_uri: str,
     # input_path: str | None = None,
-    input_path: Optional[str] = None,
+    input_path: str | None = None,
 ) -> dict[str, Any]:
     """
     Submits a PySpark job to a Dataproc cluster.
@@ -58,9 +58,7 @@ def submit_pyspark_job(
         # Define the output path for the job
         output_bucket_path = os.getenv("GCS_BUCKET_FOR_OUTPUT")
         current_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        output_path = (
-            f"gs://{output_bucket_path}/output/wordcount_results_{current_timestamp}"
-        )
+        output_path = f"gs://{output_bucket_path}/output/wordcount_results_{current_timestamp}"
 
         job_args = [output_path]
         if input_path is not None:
@@ -109,7 +107,7 @@ def submit_pyspark_job(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred during job submission: {str(e)}"
+                f"An unexpected error occurred during job submission: {e!s}"
             ),
         }
 
@@ -174,12 +172,14 @@ def submit_scala_job(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred during Scala job submission: {str(e)}"
+                f"An unexpected error occurred during Scala job submission: {e!s}"
             ),
         }
 
 
-def check_job_status(project_id: str, region: str, job_id: str) -> dict[str, Any]:
+def check_job_status(
+    project_id: str, region: str, job_id: str
+) -> dict[str, Any]:
     """
     Checks the status of a Dataproc job.
 
@@ -194,7 +194,9 @@ def check_job_status(project_id: str, region: str, job_id: str) -> dict[str, Any
     try:
         job_client = get_job_client(region)
 
-        job = job_client.get_job(project_id=project_id, region=region, job_id=job_id)
+        job = job_client.get_job(
+            project_id=project_id, region=region, job_id=job_id
+        )
         job_state = job.status.state
 
         return {
@@ -223,7 +225,7 @@ def check_job_status(project_id: str, region: str, job_id: str) -> dict[str, Any
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while checking job status: {str(e)}"
+                f"An unexpected error occurred while checking job status: {e!s}"
             ),
         }
 
@@ -254,7 +256,9 @@ def list_dataproc_jobs(
                 "job_id": job.reference.job_id,
                 "status": job.status.state.name,
                 "status_message": (
-                    job.status.details if job.status.details else "No detailed message."
+                    job.status.details
+                    if job.status.details
+                    else "No detailed message."
                 ),
             }
 
@@ -296,7 +300,7 @@ def list_dataproc_jobs(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while listing jobs: {str(e)}"
+                f"An unexpected error occurred while listing jobs: {e!s}"
             ),
         }
 
@@ -380,7 +384,7 @@ def list_dataproc_jobs_by_type(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while listing jobs by type: {str(e)}"
+                f"An unexpected error occurred while listing jobs by type: {e!s}"
             ),
         }
 
@@ -461,7 +465,7 @@ def list_dataproc_jobs_by_cluster(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while listing jobs by cluster: {str(e)}"
+                f"An unexpected error occurred while listing jobs by cluster: {e!s}"
             ),
         }
 
@@ -485,7 +489,9 @@ def delete_dataproc_job(
     try:
         job_client = get_job_client(region)
 
-        job_client.delete_job(project_id=project_id, region=region, job_id=job_id)
+        job_client.delete_job(
+            project_id=project_id, region=region, job_id=job_id
+        )
 
         return {
             "status": "success",
@@ -518,7 +524,7 @@ def delete_dataproc_job(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while deleting job '{job_id}': {str(e)}"
+                f"An unexpected error occurred while deleting job '{job_id}': {e!s}"
             ),
         }
 
@@ -544,7 +550,9 @@ def check_dataproc_job_exists(
         job_client = get_job_client(region)
 
         # Attempt to get the job
-        job = job_client.get_job(project_id=project_id, region=region, job_id=job_id)
+        job = job_client.get_job(
+            project_id=project_id, region=region, job_id=job_id
+        )
 
         return {
             "status": "success",

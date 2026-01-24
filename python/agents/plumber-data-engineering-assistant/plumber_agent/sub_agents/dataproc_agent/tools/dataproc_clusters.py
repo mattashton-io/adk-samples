@@ -1,7 +1,7 @@
 """Module for managing Dataproc clusters."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from google.api_core.exceptions import GoogleAPICallError, NotFound
 from google.cloud import dataproc
@@ -74,7 +74,9 @@ def create_cluster(
 
         # Define the GCE (Compute Engine) configuration for the cluster
         gce_cluster_config = GceClusterConfig(
-            service_account_scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            service_account_scopes=[
+                "https://www.googleapis.com/auth/cloud-platform"
+            ],
         )
 
         # Define software configuration, including pip packages
@@ -92,7 +94,9 @@ def create_cluster(
         initialization_actions = []
         if cluster_config.get("initialization_action_script_path"):
             init_action = Cluster.InitializationAction(
-                executable_file=cluster_config.get("initialization_action_script_path")
+                executable_file=cluster_config.get(
+                    "initialization_action_script_path"
+                )
             )
             initialization_actions.append(init_action)
 
@@ -100,8 +104,8 @@ def create_cluster(
             if cluster_config.get("jar_files_gcs_path"):
                 if not gce_cluster_config.metadata:
                     gce_cluster_config.metadata = {}
-                gce_cluster_config.metadata["JAR_GCS_PATH"] = cluster_config.get(
-                    "jar_files_gcs_path"
+                gce_cluster_config.metadata["JAR_GCS_PATH"] = (
+                    cluster_config.get("jar_files_gcs_path")
                 )
 
         # Construct the full cluster configuration using the imported types
@@ -160,7 +164,7 @@ def create_cluster(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred during cluster creation: {str(e)}"
+                f"An unexpected error occurred during cluster creation: {e!s}"
             ),
         }
 
@@ -226,7 +230,7 @@ def cluster_exists_or_not(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while checking cluster existence: {str(e)}"
+                f"An unexpected error occurred while checking cluster existence: {e!s}"
             ),
         }
 
@@ -245,7 +249,9 @@ def list_clusters(project_id: str, region: str) -> dict[str, Any]:
     try:
         cluster_client = get_cluster_client(region)
 
-        clusters = cluster_client.list_clusters(project_id=project_id, region=region)
+        clusters = cluster_client.list_clusters(
+            project_id=project_id, region=region
+        )
 
         # Prepare the response
         cluster_list = []
@@ -281,7 +287,7 @@ def list_clusters(project_id: str, region: str) -> dict[str, Any]:
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while listing clusters: {str(e)}"
+                f"An unexpected error occurred while listing clusters: {e!s}"
             ),
         }
 
@@ -339,9 +345,7 @@ def start_stop_cluster(
                 ),
             }
 
-        raise Exception(
-            "Invalid action. Use 'start' or 'stop'."
-        )  # pylint: disable=broad-exception-raised
+        raise Exception("Invalid action. Use 'start' or 'stop'.")  # pylint: disable=broad-exception-raised
 
     except GoogleAPICallError as apierror:
         logger.error(
@@ -366,7 +370,7 @@ def start_stop_cluster(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while trying to {action} the cluster: {str(e)}"
+                f"An unexpected error occurred while trying to {action} the cluster: {e!s}"
             ),
         }
 
@@ -376,7 +380,7 @@ def update_cluster(
     region: str,
     cluster_name: str,
     # num_workers: int | None = None
-    num_workers: Optional[int] = None,
+    num_workers: int | None = None,
 ) -> dict[str, Any]:
     """
     Updates a Dataproc cluster.
@@ -488,7 +492,7 @@ def update_cluster(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred during cluster update: {str(e)}"
+                f"An unexpected error occurred during cluster update: {e!s}"
             ),
         }
 
@@ -525,7 +529,9 @@ def get_cluster_details(
             "labels": dict(cluster.labels),
             "config": {
                 "master_config": {
-                    "machine_type_uri": (cluster.config.master_config.machine_type_uri),
+                    "machine_type_uri": (
+                        cluster.config.master_config.machine_type_uri
+                    ),
                     "disk_config": {
                         "boot_disk_size_gb": (
                             cluster.config.master_config.disk_config.boot_disk_size_gb
@@ -533,8 +539,12 @@ def get_cluster_details(
                     },
                 },
                 "worker_config": {
-                    "num_instances": (cluster.config.worker_config.num_instances),
-                    "machine_type_uri": (cluster.config.worker_config.machine_type_uri),
+                    "num_instances": (
+                        cluster.config.worker_config.num_instances
+                    ),
+                    "machine_type_uri": (
+                        cluster.config.worker_config.machine_type_uri
+                    ),
                     "disk_config": {
                         "boot_disk_size_gb": (
                             cluster.config.worker_config.disk_config.boot_disk_size_gb
@@ -567,12 +577,14 @@ def get_cluster_details(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while fetching cluster details: {str(e)}"
+                f"An unexpected error occurred while fetching cluster details: {e!s}"
             ),
         }
 
 
-def delete_cluster(project_id: str, region: str, cluster_name: str) -> dict[str, Any]:
+def delete_cluster(
+    project_id: str, region: str, cluster_name: str
+) -> dict[str, Any]:
     """
     Deletes a Dataproc cluster.
 
@@ -626,6 +638,6 @@ def delete_cluster(project_id: str, region: str, cluster_name: str) -> dict[str,
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while deleting the cluster: {str(e)}"
+                f"An unexpected error occurred while deleting the cluster: {e!s}"
             ),
         }

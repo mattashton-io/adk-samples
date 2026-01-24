@@ -5,7 +5,6 @@ This module provides tools for interacting with Google Cloud Dataproc.
 import logging
 import subprocess
 from datetime import datetime, timedelta
-from typing import Union
 
 from google.api_core import exceptions as google_exceptions
 from google.cloud import logging_v2
@@ -81,10 +80,16 @@ def get_dataproc_cluster_logs_with_name(
 
     except google_exceptions.GoogleAPIError as e:
         logger.error("A Google Cloud API error occurred: %s", e, exc_info=True)
-        return {"status": "error", "report": f"A Google Cloud API error occurred: {e}"}
+        return {
+            "status": "error",
+            "report": f"A Google Cloud API error occurred: {e}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An unexpected error occurred: %s", e, exc_info=True)
-        return {"status": "error", "report": f"An unexpected error occurred: {e}"}
+        return {
+            "status": "error",
+            "report": f"An unexpected error occurred: {e}",
+        }
 
 
 def get_dataproc_cluster_logs_with_id(
@@ -134,10 +139,16 @@ def get_dataproc_cluster_logs_with_id(
 
     except google_exceptions.GoogleAPIError as e:
         logger.error("A Google Cloud API error occurred: %s", e, exc_info=True)
-        return {"status": "error", "report": f"A Google Cloud API error occurred: {e}"}
+        return {
+            "status": "error",
+            "report": f"A Google Cloud API error occurred: {e}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An unexpected error occurred: %s", e, exc_info=True)
-        return {"status": "error", "report": f"An unexpected error occurred: {e}"}
+        return {
+            "status": "error",
+            "report": f"An unexpected error occurred: {e}",
+        }
 
 
 def get_dataproc_logs(
@@ -208,7 +219,7 @@ def get_dataproc_logs(
 
 def get_dataproc_normal_job_logs_with_id(
     project_id: str, region: str, job_id: str, filter_key: str
-) -> Union[subprocess.CompletedProcess, list[str]]:
+) -> subprocess.CompletedProcess | list[str]:
     """
     Executes a gcloud command to fetch and wait for (or stream) logs for a traditional
     Dataproc Job or Batch, returning the raw command result.
@@ -250,7 +261,9 @@ def get_dataproc_normal_job_logs_with_id(
             command_str, capture_output=True, text=True, check=False, shell=True
         )
         logger.info(
-            "Result for '%s' command: returncode=%s", filter_key, result.returncode
+            "Result for '%s' command: returncode=%s",
+            filter_key,
+            result.returncode,
         )
         return result
     except FileNotFoundError as e:
@@ -261,7 +274,9 @@ def get_dataproc_normal_job_logs_with_id(
         )
         return []
     except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.error("An error occurred while calling command: %s", e, exc_info=True)
+        logger.error(
+            "An error occurred while calling command: %s", e, exc_info=True
+        )
         return []
 
 

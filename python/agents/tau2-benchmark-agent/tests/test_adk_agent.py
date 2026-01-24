@@ -132,7 +132,7 @@ def test_adk_agent_with_tool_call(
     get_environment, first_user_message: UserMessage
 ):
     """Test case for AdkAgent with a tool call and response."""
-    
+
     tool_call_count = 4
 
     # Setup agent to respond with a tool call first
@@ -188,10 +188,10 @@ def test_adk_agent_with_multi_tool_call(
     get_environment, first_user_message: UserMessage
 ):
     """Test case for AdkAgent with multiple tool calls."""
-    
+
     target_tool_call_count = 2
     target_message_count = 5
-    
+
     # Setup agent to respond with multiple tool calls
     mock_llm_multi_tool_call = MockLlm(response_type="multi_tool_call")
     agent = AdkAgent(

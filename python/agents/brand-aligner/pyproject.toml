@@ -33,8 +33,9 @@ packages = ["brand_aligner_agent", "deployment", "tests"]
 
 [tool.ruff]
 extend = "../../../pyproject.toml"
-indent-width = 4
-line-length = 80
+
+[tool.ruff.lint]
+ignore = ["C901", "PLR0912"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["brand_aligner_agent"]

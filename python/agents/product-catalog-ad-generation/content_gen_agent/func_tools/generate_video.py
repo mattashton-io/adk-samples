@@ -44,6 +44,7 @@ MIN_VID_LENGTH = 4
 MEDIAN_VID_LENGTH = 6
 MAX_VID_LENGTH = 8
 
+
 @dataclass
 class VideoGenerationInput:
     """Input parameters for video generation."""

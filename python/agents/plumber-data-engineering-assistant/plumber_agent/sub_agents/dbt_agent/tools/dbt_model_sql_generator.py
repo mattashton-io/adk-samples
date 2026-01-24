@@ -73,7 +73,9 @@ def generate_dbt_model_sql(gcs_url: str) -> dict[str, str | None]:
 
         if file_type == "csv":
             file_content = file_bytes.decode("utf-8")
-            response = model.generate_content([PARSING_INSTRUCTIONS, file_content])
+            response = model.generate_content(
+                [PARSING_INSTRUCTIONS, file_content]
+            )
         else:
             image = Image.from_bytes(file_bytes)
             response = model.generate_content([PARSING_INSTRUCTIONS, image])
@@ -95,5 +97,5 @@ def generate_dbt_model_sql(gcs_url: str) -> dict[str, str | None]:
         return {
             "output_path": None,
             "output_sql": None,
-            "result": f"error - {str(err)}",
+            "result": f"error - {err!s}",
         }

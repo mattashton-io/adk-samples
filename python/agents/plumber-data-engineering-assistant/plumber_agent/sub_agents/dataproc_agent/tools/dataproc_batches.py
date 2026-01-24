@@ -80,7 +80,9 @@ def create_dataproc_serverless_batch(
         if job_details.get("spark_history_staging_dir"):
             environment_config.peripherals_config = PeripheralsConfig(
                 spark_history_server_config=SparkHistoryServerConfig(
-                    dataproc_staging_dir=job_details.get("spark_history_staging_dir")
+                    dataproc_staging_dir=job_details.get(
+                        "spark_history_staging_dir"
+                    )
                 )
             )
 
@@ -97,7 +99,9 @@ def create_dataproc_serverless_batch(
         )
 
         parent = f"projects/{project_id}/locations/{region}"
-        request = CreateBatchRequest(parent=parent, batch_id=batch_id, batch=batch)
+        request = CreateBatchRequest(
+            parent=parent, batch_id=batch_id, batch=batch
+        )
 
         batch_client.create_batch(request=request)
 
@@ -128,7 +132,7 @@ def create_dataproc_serverless_batch(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred during batch creation: {str(e)}"
+                f"An unexpected error occurred during batch creation: {e!s}"
             ),
         }
 
@@ -181,7 +185,7 @@ def check_dataproc_serverless_status(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while checking batch status: {str(e)}"
+                f"An unexpected error occurred while checking batch status: {e!s}"
             ),
         }
 
@@ -237,7 +241,7 @@ def list_dataproc_serverless_batches(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while checking batch status: {str(e)}"
+                f"An unexpected error occurred while checking batch status: {e!s}"
             ),
         }
 
@@ -297,7 +301,7 @@ def list_dataproc_serverless_batches_by_state(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while checking batch status: {str(e)}"
+                f"An unexpected error occurred while checking batch status: {e!s}"
             ),
         }
 
@@ -349,6 +353,6 @@ def delete_dataproc_serverless_batch(
         return {
             "status": "error",
             "error_message": (
-                f"An unexpected error occurred while deleting the batch: {str(e)}"
+                f"An unexpected error occurred while deleting the batch: {e!s}"
             ),
         }

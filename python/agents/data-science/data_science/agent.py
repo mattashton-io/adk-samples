@@ -93,7 +93,7 @@ def load_dataset_config():
     if not dataset_config_file:
         _logger.fatal("DATASET_CONFIG_FILE env var not set")
 
-    with open(dataset_config_file, "r", encoding="utf-8") as f:
+    with open(dataset_config_file, encoding="utf-8") as f:
         dataset_config = json.load(f)
 
     if "datasets" not in dataset_config:

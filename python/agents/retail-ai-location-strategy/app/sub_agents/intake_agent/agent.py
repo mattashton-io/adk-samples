@@ -19,7 +19,6 @@ required parameters (target_location, business_type) into session state
 for use by subsequent agents in the pipeline.
 """
 
-
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types

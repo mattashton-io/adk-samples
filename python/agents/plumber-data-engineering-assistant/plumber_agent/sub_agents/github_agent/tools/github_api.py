@@ -8,7 +8,8 @@ import logging
 import os
 import shutil
 import zipfile
-from typing import Any, Optional
+from http import HTTPStatus
+from typing import Any
 
 import requests
 
@@ -36,7 +37,9 @@ def authenticate_github(token: str = "") -> dict[str, Any]:
         }
     headers = _create_github_headers(token)
     try:
-        response = requests.get(f"{API_BASE_URL}/user", headers=headers, timeout=60)
+        response = requests.get(
+            f"{API_BASE_URL}/user", headers=headers, timeout=60
+        )
         response.raise_for_status()
         user_data = response.json()
         return {
@@ -50,16 +53,14 @@ def authenticate_github(token: str = "") -> dict[str, Any]:
         return {"status": "error", "message": msg}
     except requests.exceptions.HTTPError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        if e.response.status_code == 401:
-            msg = (
-                "Authentication failed (401): Bad credentials. Please check your token."
-            )
+        if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+            msg = "Authentication failed (401): Bad credentials. Please check your token."
             return {"status": "error", "message": msg}
         msg = f"Authentication failed ({e.response.status_code}): {e.response.text}"
         return {"status": "error", "message": msg}
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        msg = f"An unexpected authentication error occurred: {str(e)}"
+        msg = f"An unexpected authentication error occurred: {e!s}"
         return {"status": "error", "message": msg}
 
 
@@ -89,7 +90,7 @@ def search_repositories(repo_name: str, token: str = "") -> dict[str, Any]:
         logger.error("An error occurred: %s", e, exc_info=True)
         return {
             "status": "error",
-            "message": f"An error occurred during search: {str(e)}",
+            "message": f"An error occurred during search: {e!s}",
         }
 
 
@@ -105,7 +106,9 @@ def list_branches(repository: str, token: str = "") -> dict[str, Any]:
     headers = _create_github_headers(token)
     try:
         response = requests.get(
-            f"{API_BASE_URL}/repos/{owner}/{repo}/branches", headers=headers, timeout=10
+            f"{API_BASE_URL}/repos/{owner}/{repo}/branches",
+            headers=headers,
+            timeout=10,
         )
         response.raise_for_status()
         branches = [branch["name"] for branch in response.json()]
@@ -122,21 +125,21 @@ def list_branches(repository: str, token: str = "") -> dict[str, Any]:
         }
     except requests.exceptions.HTTPError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        if e.response.status_code == 404:
+        if e.response.status_code == HTTPStatus.NOT_FOUND:
             msg = "Could not list branches (404): Repository not found."
             return {"status": "error", "message": msg}
         msg = f"Failed to list branches ({e.response.status_code}): {e.response.text}"
         return {"status": "error", "message": msg}
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        msg = f"An error occurred while listing branches: {str(e)}"
+        msg = f"An error occurred while listing branches: {e!s}"
         return {"status": "error", "message": msg}
 
 
 def download_repository(
     repository: str,
     branch: str = "main",
-    download_path: Optional[str] = None,
+    download_path: str | None = None,
     token: str = "",
     init_git: bool = True,
 ) -> dict[str, Any]:
@@ -170,7 +173,9 @@ def download_repository(
     zip_url = f"{API_BASE_URL}/repos/{owner}/{repo}/zipball/{branch}"
 
     try:
-        response = requests.get(zip_url, headers=headers, stream=True, timeout=10)
+        response = requests.get(
+            zip_url, headers=headers, stream=True, timeout=10
+        )
         response.raise_for_status()
 
         # Ensure the base download directory exists
@@ -216,12 +221,12 @@ def download_repository(
         return {"status": "error", "message": msg}
     except requests.exceptions.HTTPError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        if e.response.status_code == 404:
+        if e.response.status_code == HTTPStatus.NOT_FOUND:
             msg = "Download failed (404): Repository or branch not found."
             return {"status": "error", "message": msg}
         msg = f"Download failed ({e.response.status_code}): {e.response.text}"
         return {"status": "error", "message": msg}
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        msg = f"An error occurred during download: {str(e)}"
+        msg = f"An error occurred during download: {e!s}"
         return {"status": "error", "message": msg}

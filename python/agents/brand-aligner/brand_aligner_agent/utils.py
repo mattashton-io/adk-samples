@@ -55,15 +55,19 @@ before or after the JSON.
 
 def _text_progress_bar(percent: float, length: int = 20) -> str:
     """Generates a compact text-based progress bar."""
-    if not (0 <= percent <= 100 and isinstance(length, int) and length > 0):
+    max_progress = 100
+
+    if not (
+        0 <= percent <= max_progress and isinstance(length, int) and length > 0
+    ):
         logger.error("Invalid percent or length for progress bar")
         if percent < 0:
             percent = 0
-        elif percent > 100:
-            percent = 100
+        elif percent > max_progress:
+            percent = max_progress
         if not isinstance(length, int) or length < 0:
             length = 20
-    filled_len = int(length * percent / 100)
+    filled_len = int(length * percent / max_progress)
     return f"[{'\u2588' * filled_len}{'\u2591' * (length - filled_len)}]"
 
 
@@ -107,8 +111,7 @@ def after_model_callback(
         progress = (current_weight / total_weight) * 100
 
     # Cap at 100
-    if progress > 100:
-        progress = 100
+    progress = min(progress, 100)
 
     # If summarizer agent is active, we are effectively done or almost done.
     if callback_context.agent_name == "summarizer_agent":
@@ -133,6 +136,8 @@ def after_model_callback(
 
 async def generate_radar_chart(evaluation: AssetEvaluation) -> bytes | None:
     """Generates a detailed radar chart for the asset evaluation."""
+    max_categories_for_chart = 10
+
     # 1. Collect all unique categories from the evaluation verdicts, ignoring n/a
     raw_categories = {
         verdict.category
@@ -145,7 +150,7 @@ async def generate_radar_chart(evaluation: AssetEvaluation) -> bytes | None:
 
     # 2. Use LLM to group them into Master Categories
     category_mapping = {cat: cat for cat in raw_categories}
-    if len(raw_categories) > 10:
+    if len(raw_categories) > max_categories_for_chart:
         try:
             logger.info(
                 "Grouping categories for radar chart using LLM... Current categories: %r",
@@ -222,7 +227,7 @@ async def generate_radar_chart(evaluation: AssetEvaluation) -> bytes | None:
     angles += angles[:1]
 
     # Increase figure size for better readability of labels
-    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw={"polar": True})
 
     # Draw one axe per variable + labels
     plt.xticks(angles[:-1], labels)

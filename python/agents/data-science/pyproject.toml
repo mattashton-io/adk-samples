@@ -41,6 +41,9 @@ dev = [
 # Points back to the Master template in the root
 extend = "../../../pyproject.toml"
 
+[tool.ruff.lint]
+ignore = ["C901", "PLR0911", "PLR0912", "PLW0603"]
+
 [tool.ruff.lint.isort]
 # Ensures the data science source is treated as first-party
 known-first-party = ["data_science"]

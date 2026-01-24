@@ -19,12 +19,13 @@ import os
 
 import vertexai
 from absl import app, flags
-from data_science.agent import root_agent
 from dotenv import load_dotenv
 from google.api_core import exceptions as google_exceptions
 from google.cloud import storage
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from data_science.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")
@@ -45,7 +46,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def setup_staging_bucket(project_id: str, location: str, bucket_name: str) -> str:
+def setup_staging_bucket(
+    project_id: str, location: str, bucket_name: str
+) -> str:
     """
     Checks if the staging bucket exists, creates it if not.
 
@@ -67,7 +70,9 @@ def setup_staging_bucket(project_id: str, location: str, bucket_name: str) -> st
         if bucket:
             logger.info("Staging bucket gs://%s already exists.", bucket_name)
         else:
-            logger.info("Staging bucket gs://%s not found. Creating...", bucket_name)
+            logger.info(
+                "Staging bucket gs://%s not found. Creating...", bucket_name
+            )
             # Create the bucket if it doesn't exist
             new_bucket = storage_client.create_bucket(
                 bucket_name, project=project_id, location=location
@@ -78,7 +83,9 @@ def setup_staging_bucket(project_id: str, location: str, bucket_name: str) -> st
                 location,
             )
             # Enable uniform bucket-level access for simplicity
-            new_bucket.iam_configuration.uniform_bucket_level_access_enabled = True
+            new_bucket.iam_configuration.uniform_bucket_level_access_enabled = (
+                True
+            )
             new_bucket.patch()
             logger.info(
                 "Enabled uniform bucket-level access for gs://%s.",
@@ -152,7 +159,9 @@ def delete(resource_id: str) -> None:
         logger.error("Agent with resource ID %s not found.", resource_id)
         print(f"\nAgent not found: {resource_id}")
     except Exception as e:
-        logger.error("An error occurred while deleting agent %s: %s", resource_id, e)
+        logger.error(
+            "An error occurred while deleting agent %s: %s", resource_id, e
+        )
         print(f"\nError deleting agent {resource_id}: {e}")
 
 
@@ -162,9 +171,13 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
     env_vars = {}
 
     project_id = (
-        FLAGS.project_id if FLAGS.project_id else os.getenv("GOOGLE_CLOUD_PROJECT")
+        FLAGS.project_id
+        if FLAGS.project_id
+        else os.getenv("GOOGLE_CLOUD_PROJECT")
     )
-    location = FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
+    location = (
+        FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
+    )
     # Default bucket name convention if not provided
     default_bucket_name = f"{project_id}-adk-staging" if project_id else None
     bucket_name = (
@@ -231,16 +244,22 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
             "or use --bucket flag."
         )
     if not FLAGS.create and not FLAGS.delete:
-        raise app.UsageError("You must specify either --create or --delete flag.")
+        raise app.UsageError(
+            "You must specify either --create or --delete flag."
+        )
     if FLAGS.delete and not FLAGS.resource_id:
-        raise app.UsageError("--resource_id is required when using the --delete flag.")
+        raise app.UsageError(
+            "--resource_id is required when using the --delete flag."
+        )
     # --- End Input Validation ---
 
     try:
         # Setup staging bucket
         staging_bucket_uri = None
         if FLAGS.create:
-            staging_bucket_uri = setup_staging_bucket(project_id, location, bucket_name)
+            staging_bucket_uri = setup_staging_bucket(
+                project_id, location, bucket_name
+            )
 
         # Initialize Vertex AI *after* bucket setup and validation
         vertexai.init(

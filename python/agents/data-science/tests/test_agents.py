@@ -19,13 +19,14 @@ import sys
 import unittest
 
 import pytest
-from data_science.agent import root_agent
-from data_science.sub_agents.bigquery.agent import database_agent
-from data_science.sub_agents.bqml.agent import root_agent as bqml_agent
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+
+from data_science.agent import root_agent
+from data_science.sub_agents.bigquery.agent import database_agent
+from data_science.sub_agents.bqml.agent import root_agent as bqml_agent
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 

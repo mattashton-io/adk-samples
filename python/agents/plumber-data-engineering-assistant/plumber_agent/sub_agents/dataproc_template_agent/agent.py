@@ -23,7 +23,11 @@ root_agent = Agent(
         "and submit dataproc template job"
     ),
     instruction=(AGENT_INSTRUCTION),
-    tools=[get_dataproc_template, run_dataproc_template, get_transformation_sql],
+    tools=[
+        get_dataproc_template,
+        run_dataproc_template,
+        get_transformation_sql,
+    ],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
             types.SafetySetting(

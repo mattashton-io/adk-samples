@@ -6,6 +6,7 @@ from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+
 from policy_as_code_agent import agent as agent_module
 
 
@@ -14,7 +15,9 @@ def mock_get_active_core_policies() -> dict:
     return {"status": "success", "policies": ["Policy A", "Policy B"]}
 
 
-def mock_generate_compliance_scorecard(source_type: str, source_target: str) -> dict:
+def mock_generate_compliance_scorecard(
+    source_type: str, source_target: str
+) -> dict:
     return {
         "status": "success",
         "scorecard": {
@@ -74,7 +77,9 @@ async def test_scorecard_generation(runner: Runner) -> None:
     )
 
     # User asks for scorecard
-    input_text = "Generate a compliance scorecard for GCS path gs://bucket/file.jsonl"
+    input_text = (
+        "Generate a compliance scorecard for GCS path gs://bucket/file.jsonl"
+    )
     input_content = types.UserContent(input_text)
 
     response_text = ""

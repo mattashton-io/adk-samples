@@ -63,7 +63,9 @@ def get_dataflow_job_logs_with_id(
         client = logging_v2.Client(project=project_id)
         project_path = f"projects/{project_id}"
         iterator = client.list_entries(
-            resource_names=[project_path], filter_=filter_string, max_results=_limit
+            resource_names=[project_path],
+            filter_=filter_string,
+            max_results=_limit,
         )
 
         collected_logs = _process_log_iterator(iterator, _limit)
@@ -78,9 +80,14 @@ def get_dataflow_job_logs_with_id(
 
     except StopIteration as err:
         logger.error("An error occurred: %s", err, exc_info=True)
-        return {"status": "success", "report": "No job log entry found with given ID."}
+        return {
+            "status": "success",
+            "report": "No job log entry found with given ID.",
+        }
     except google_exceptions.GoogleAPIError as err:
-        logger.error("A Google Cloud API error occurred: %s", err, exc_info=True)
+        logger.error(
+            "A Google Cloud API error occurred: %s", err, exc_info=True
+        )
         return {
             "status": "error",
             "message": f"Failed to get job with given id due to API error: {err}",

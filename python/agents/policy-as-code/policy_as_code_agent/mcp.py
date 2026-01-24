@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from typing import Any, List
+from typing import Any
 
 import google.auth
 import google.auth.transport.requests
@@ -18,11 +18,13 @@ class SafeMCPToolset(McpToolset):
     (albeit without the MCP tools) instead of crashing.
     """
 
-    async def get_tools(self, *args: Any, **kwargs: Any) -> List[Any]:
+    async def get_tools(self, *args: Any, **kwargs: Any) -> list[Any]:
         try:
             return await super().get_tools(*args, **kwargs)
         except Exception as e:
-            logging.error(f"Failed to connect to MCP server or retrieve tools: {e}")
+            logging.error(
+                f"Failed to connect to MCP server or retrieve tools: {e}"
+            )
             logging.warning("Continuing without MCP tools.")
             return []
 
@@ -56,7 +58,9 @@ def _get_dataplex_mcp_toolset():
             target_audience = DATAPLEX_MCP_SERVER_URL
             token = id_token.fetch_id_token(auth_req, target_audience)
         except Exception as e:
-            logging.error(f"Failed to get ID token for MCP server via library: {e}")
+            logging.error(
+                f"Failed to get ID token for MCP server via library: {e}"
+            )
             return None
 
     return SafeMCPToolset(

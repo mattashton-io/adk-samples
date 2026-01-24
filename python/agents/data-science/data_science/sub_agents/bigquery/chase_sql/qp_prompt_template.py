@@ -110,11 +110,11 @@ Repeating the question and generating the SQL with Recursive Divide-and-Conquer.
 
 ** Matching Restaurants:**
 1. Start reading the location table: Move to the first row in the location table.
-2. Check if the street matches: Look at the street_name column of the current row in location. If it’s not "san pablo ave," skip this row.
+2. Check if the street matches: Look at the street_name column of the current row in location. If it`s not "san pablo ave," skip this row.
 3. Identify the matching row: Store the identifier (row ID) of this location entry.
 4. Find the corresponding row in generalinfo: Use the row ID from location to directly find the matching row in generalinfo.
-5. Check if the food type matches: Look at the food_type column in generalinfo. If it’s not "thai," skip this row.
-6. Check if the city matches: Look at the city column in generalinfo. If it’s not "albany," skip this row.
+5. Check if the food type matches: Look at the food_type column in generalinfo. If it`s not "thai," skip this row.
+6. Check if the city matches: Look at the city column in generalinfo. If it`s not "albany," skip this row.
 
 ** Counting Restaurants:**
 1. Prepare to count this match: If all checks pass, prepare to include this row in the final count.

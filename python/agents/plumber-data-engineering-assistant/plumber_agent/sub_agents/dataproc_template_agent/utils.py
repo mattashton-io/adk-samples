@@ -128,22 +128,28 @@ def get_dataproc_template_mapping(
         template_files_list = []
         if language == "Python":
             # FETCH ALL THE TEMPLATES FROM THE README PATH
-            template_files_list = find_files(directory=readme_path, regex="*_to_*.py")
+            template_files_list = find_files(
+                directory=readme_path, regex="*_to_*.py"
+            )
         elif language == "Java":
             # FETCH ALL THE TEMPLATES FROM THE README PATH
-            template_files_list = find_files(directory=readme_path, regex="*To*.java")
+            template_files_list = find_files(
+                directory=readme_path, regex="*To*.java"
+            )
 
         # FIND THE CORRECT TEMPLATE FILE BASED ON THE USER INPUT
         if language.upper() == "JAVA":
             response = model.generate_content(
                 CORRECT_JAVA_TEMPLATE_FILE_INSTRUCTION.format(
-                    user_prompt=user_prompt, template_files_list=template_files_list
+                    user_prompt=user_prompt,
+                    template_files_list=template_files_list,
                 )
             )
         else:
             response = model.generate_content(
                 CORRECT_PYTHON_TEMPLATE_FILE_INSTRUCTION.format(
-                    user_prompt=user_prompt, template_files_list=template_files_list
+                    user_prompt=user_prompt,
+                    template_files_list=template_files_list,
                 )
             )
         correct_template = response.text.replace("\n", "")
@@ -154,7 +160,7 @@ def get_dataproc_template_mapping(
             return json.dumps({})
 
         # READING THE CONTENT OF README FILE
-        with open(correct_readme_file, "r", encoding="utf-8") as readme_file:
+        with open(correct_readme_file, encoding="utf-8") as readme_file:
             readme_content = readme_file.read()
 
         # FETCHING THE CORRECT DATAPROC TEMPLATE FROM THE README FILE
@@ -172,7 +178,9 @@ def get_dataproc_template_mapping(
 
     except Exception as err:  # pylint: disable=broad-exception-caught
         logger.error(
-            "An error occurred while mapping the template: %s", err, exc_info=True
+            "An error occurred while mapping the template: %s",
+            err,
+            exc_info=True,
         )
         return json.dumps({})
 
@@ -217,11 +225,13 @@ def get_dataproc_template_repo() -> dict[str, str]:
         }
     except Exception as err:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", err, exc_info=True)
-        return {"status": f"error - {str(err)}"}
+        return {"status": f"error - {err!s}"}
 
 
 # UTILITY FUNCTION TO VALIDATE THE USER INPUT PARAMS FOR A GIVEN TEMPLATE
-def validate_input_params(template_params: dict, input_params: dict) -> dict[str, str]:
+def validate_input_params(
+    template_params: dict, input_params: dict
+) -> dict[str, str]:
     """
     Validates user-provided input parameters against a template's required and
     optional parameters.
@@ -256,7 +266,10 @@ def validate_input_params(template_params: dict, input_params: dict) -> dict[str
         invalid_input_params = list(set(input_params_name) - set(all_params))
 
         if invalid_input_params:
-            return {"validation_result": "failed", "comment": "Invalid param passed"}
+            return {
+                "validation_result": "failed",
+                "comment": "Invalid param passed",
+            }
 
         # CHECK WHETHER ALL REQUIRED PARAMS ARE PASSED OR NOT
         all_required_params = set(required_template_params).issubset(
@@ -264,21 +277,27 @@ def validate_input_params(template_params: dict, input_params: dict) -> dict[str
         )
 
         if not all_required_params:
-            return {"validation_result": "failed", "comment": "Missing required params"}
+            return {
+                "validation_result": "failed",
+                "comment": "Missing required params",
+            }
 
         return {"validation_result": "success", "comment": "Validation Passed"}
     except Exception as err:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", err, exc_info=True)
         return {
             "validation_result": "failed",
-            "comment": f"Error while running validation - {str(err)}",
+            "comment": f"Error while running validation - {err!s}",
         }
 
 
 # UTILITY FUNCTION TO REPLICATE THE DATAPROC TEMPLATE DIRECTORY TO THE TEMP
 # DIRECTORY WITH THE UPDATED TEMPLATE CODE
 def update_dataproc_template(
-    run_id: str, template_file_name: str, template_dir: str, transformation_sql: str
+    run_id: str,
+    template_file_name: str,
+    template_dir: str,
+    transformation_sql: str,
 ) -> str:
     """
     Creates a temporary, modified copy of a Dataproc template with transformation
@@ -317,7 +336,7 @@ def update_dataproc_template(
     )
 
     # READ THE ORIGINAL TEMPLATE
-    with open(template_path, "r", encoding="utf-8") as f:
+    with open(template_path, encoding="utf-8") as f:
         original_template_code = f.read()
 
     prompt = TRANSFORMATION_CODE_GENERATION_PROMPT.format(

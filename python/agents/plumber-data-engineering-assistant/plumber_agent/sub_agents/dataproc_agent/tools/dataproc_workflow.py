@@ -62,7 +62,9 @@ def create_workflow_template(
     if not jobs:
         error_msg = "The 'jobs' list cannot be empty."
         logger.error(
-            "Workflow template creation failed for '%s': %s", template_id, error_msg
+            "Workflow template creation failed for '%s': %s",
+            template_id,
+            error_msg,
         )
         return {"status": "error", "message": error_msg}
 
@@ -72,7 +74,9 @@ def create_workflow_template(
     if not (managed_cluster_config or cluster_selector_labels):
         error_msg = "You must specify either 'managed_cluster_config' or 'cluster_selector_labels'."
         logger.error(
-            "Workflow template creation failed for '%s': %s", template_id, error_msg
+            "Workflow template creation failed for '%s': %s",
+            template_id,
+            error_msg,
         )
         return {
             "status": "error",
@@ -85,7 +89,9 @@ def create_workflow_template(
             "mutually exclusive. Please provide only one."
         )
         logger.error(
-            "Workflow template creation failed for '%s': %s", template_id, error_msg
+            "Workflow template creation failed for '%s': %s",
+            template_id,
+            error_msg,
         )
         return {
             "status": "error",
@@ -104,13 +110,17 @@ def create_workflow_template(
             cluster_name=managed_cluster_config.get("cluster_name_prefix"),
             config=ClusterConfig(
                 gce_cluster_config=GceClusterConfig(
-                    service_account=managed_cluster_config.get("service_account"),
+                    service_account=managed_cluster_config.get(
+                        "service_account"
+                    ),
                     subnetwork_uri=managed_cluster_config.get("subnet_uri"),
                     zone_uri=managed_cluster_config.get("zone"),
                 ),
                 master_config=InstanceGroupConfig(
                     num_instances=1,
-                    machine_type_uri=managed_cluster_config.get("master_machine_type"),
+                    machine_type_uri=managed_cluster_config.get(
+                        "master_machine_type"
+                    ),
                     disk_config=DiskConfig(
                         boot_disk_size_gb=managed_cluster_config.get(
                             "master_disk_size_gb"
@@ -119,7 +129,9 @@ def create_workflow_template(
                 ),
                 worker_config=InstanceGroupConfig(
                     num_instances=managed_cluster_config.get("num_workers"),
-                    machine_type_uri=managed_cluster_config.get("worker_machine_type"),
+                    machine_type_uri=managed_cluster_config.get(
+                        "worker_machine_type"
+                    ),
                     disk_config=(
                         DiskConfig(
                             boot_disk_size_gb=managed_cluster_config.get(
@@ -159,15 +171,21 @@ def create_workflow_template(
                     python_file_uris=job_data["pyspark_job"].get(
                         "python_file_uris", []
                     ),
-                    jar_file_uris=job_data["pyspark_job"].get("jar_file_uris", []),
+                    jar_file_uris=job_data["pyspark_job"].get(
+                        "jar_file_uris", []
+                    ),
                     properties=job_data["pyspark_job"].get("properties", {}),
                 )
             elif "spark_job" in job_data:
                 job_obj.spark_job = SparkJob(
                     main_class=job_data["spark_job"].get("main_class"),
-                    main_jar_file_uri=job_data["spark_job"].get("main_jar_file_uri"),
+                    main_jar_file_uri=job_data["spark_job"].get(
+                        "main_jar_file_uri"
+                    ),
                     args=job_data["spark_job"].get("args", []),
-                    jar_file_uris=job_data["spark_job"].get("jar_file_uris", []),
+                    jar_file_uris=job_data["spark_job"].get(
+                        "jar_file_uris", []
+                    ),
                     properties=job_data["spark_job"].get("properties", {}),
                 )
 
@@ -192,7 +210,7 @@ def create_workflow_template(
         )
         return {
             "status": "error",
-            "error_message": f"Failed to create workflow template: {str(apierror)}",
+            "error_message": f"Failed to create workflow template: {apierror!s}",
         }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(
@@ -203,7 +221,7 @@ def create_workflow_template(
         )
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred: {str(e)}",
+            "error_message": f"An unexpected error occurred: {e!s}",
         }
 
 
@@ -222,7 +240,9 @@ def list_workflow_templates(project_id: str, region: str) -> dict[str, Any]:
         workflow_template_client = get_workflow_template_client(region)
 
         parent = f"projects/{project_id}/regions/{region}"
-        templates = workflow_template_client.list_workflow_templates(parent=parent)
+        templates = workflow_template_client.list_workflow_templates(
+            parent=parent
+        )
 
         template_list = []
         for template in templates:
@@ -256,5 +276,5 @@ def list_workflow_templates(project_id: str, region: str) -> dict[str, Any]:
         )
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred: {str(e)}",
+            "error_message": f"An unexpected error occurred: {e!s}",
         }

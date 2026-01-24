@@ -33,7 +33,9 @@ def test_find_policy_in_memory_success(MockEmbeddingModel):
         "embedding": [0.1, 0.2, 0.3],
         "similarity_distance": 0.1,
     }
-    mock_doc.get.return_value = 0.1  # for similarity_distance if accessed via get
+    mock_doc.get.return_value = (
+        0.1  # for similarity_distance if accessed via get
+    )
 
     mock_vector_query.stream.return_value = [mock_doc]
 
@@ -54,6 +56,8 @@ def test_save_policy_to_memory(MockEmbeddingModel):
 
 
 def test_list_policy_versions():
+    target_version_count = 2
+
     mock_doc1 = MagicMock()
     mock_doc1.to_dict.return_value = {"policy_id": "123", "version": 1}
     mock_doc2 = MagicMock()
@@ -68,15 +72,15 @@ def test_list_policy_versions():
     result = memory.list_policy_versions("123")
 
     assert result["status"] == "success"
-    assert len(result["versions"]) == 2
+    assert len(result["versions"]) == target_version_count
 
 
 def test_log_policy_execution():
+    target_violation_count = 5
+
     # Setup Mocks
     mock_collection = memory.db.collection.return_value
-    mock_stream = (
-        mock_collection.where.return_value.where.return_value.limit.return_value.stream
-    )
+    mock_stream = mock_collection.where.return_value.where.return_value.limit.return_value.stream
 
     # Mock policy doc for stats update
     mock_doc = MagicMock()
@@ -105,7 +109,7 @@ def test_log_policy_execution():
     data = args[0]
     assert data["policy_id"] == "123"
     assert data["status"] == "violations_found"
-    assert data["violation_count"] == 5
+    assert data["violation_count"] == target_violation_count
 
     # Check update() call for policy aggregate stats
     mock_doc.reference.update.assert_called()
@@ -131,7 +135,9 @@ def test_get_execution_history():
     mock_query.stream.return_value = [mock_doc]
 
     # Run Code
-    result = memory.get_execution_history(days=7, status="success", policy_id="123")
+    result = memory.get_execution_history(
+        days=7, status="success", policy_id="123"
+    )
 
     # Verify
     assert result["status"] == "success"

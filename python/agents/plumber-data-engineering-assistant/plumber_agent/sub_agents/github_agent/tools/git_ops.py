@@ -7,7 +7,7 @@ adding files, committing changes, and managing branches.
 
 import logging
 import os
-from typing import Any, Optional
+from typing import Any
 
 import git
 from git import InvalidGitRepositoryError, Repo
@@ -34,7 +34,10 @@ def initialize_git_repo(repo_path: str) -> dict[str, Any]:
     """
     try:
         if not os.path.exists(repo_path):
-            return {"status": "error", "message": f"Path does not exist: {repo_path}"}
+            return {
+                "status": "error",
+                "message": f"Path does not exist: {repo_path}",
+            }
         try:
             existing_repo = Repo(repo_path)
             return {
@@ -56,7 +59,7 @@ def initialize_git_repo(repo_path: str) -> dict[str, Any]:
         logger.error("An error occurred: %s", e, exc_info=True)
         return {
             "status": "error",
-            "message": f"Failed to initialize Git repository: {str(e)}",
+            "message": f"Failed to initialize Git repository: {e!s}",
         }
 
 
@@ -117,14 +120,20 @@ def get_git_status(repo_path: str) -> dict[str, Any]:
         }
     except InvalidGitRepositoryError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Not a Git repository: {repo_path}"}
+        return {
+            "status": "error",
+            "message": f"Not a Git repository: {repo_path}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Failed to get Git status: {str(e)}"}
+        return {
+            "status": "error",
+            "message": f"Failed to get Git status: {e!s}",
+        }
 
 
 def add_files_to_git(
-    repo_path: str, files: Optional[list[str]] = None, add_all: bool = False
+    repo_path: str, files: list[str] | None = None, add_all: bool = False
 ) -> dict[str, Any]:
     """
     Adds specified files or all changes to the Git staging area.
@@ -171,14 +180,20 @@ def add_files_to_git(
         }
     except InvalidGitRepositoryError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Not a Git repository: {repo_path}"}
+        return {
+            "status": "error",
+            "message": f"Not a Git repository: {repo_path}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Failed to add files: {str(e)}"}
+        return {"status": "error", "message": f"Failed to add files: {e!s}"}
 
 
 def commit_changes(
-    repo_path: str, commit_message: str, author_name: str = "", author_email: str = ""
+    repo_path: str,
+    commit_message: str,
+    author_name: str = "",
+    author_email: str = "",
 ) -> dict[str, Any]:
     """
     Commits staged changes in the repository.
@@ -202,10 +217,15 @@ def commit_changes(
             has_commits = False
         if has_commits:
             if not repo.index.diff("HEAD"):
-                return {"status": "error", "message": "No staged changes to commit"}
-        else:
-            if not repo.index.entries:
-                return {"status": "error", "message": "No staged changes to commit"}
+                return {
+                    "status": "error",
+                    "message": "No staged changes to commit",
+                }
+        elif not repo.index.entries:
+            return {
+                "status": "error",
+                "message": "No staged changes to commit",
+            }
         if author_name and author_email:
             author = git.Actor(author_name, author_email)
             commit = repo.index.commit(commit_message, author=author)
@@ -220,10 +240,16 @@ def commit_changes(
         }
     except InvalidGitRepositoryError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Not a Git repository: {repo_path}"}
+        return {
+            "status": "error",
+            "message": f"Not a Git repository: {repo_path}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Failed to commit changes: {str(e)}"}
+        return {
+            "status": "error",
+            "message": f"Failed to commit changes: {e!s}",
+        }
 
 
 def list_git_branches(repo_path: str) -> dict[str, Any]:
@@ -258,10 +284,13 @@ def list_git_branches(repo_path: str) -> dict[str, Any]:
         }
     except InvalidGitRepositoryError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Not a Git repository: {repo_path}"}
+        return {
+            "status": "error",
+            "message": f"Not a Git repository: {repo_path}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Failed to list branches: {str(e)}"}
+        return {"status": "error", "message": f"Failed to list branches: {e!s}"}
 
 
 def switch_git_branch(
@@ -324,7 +353,10 @@ def switch_git_branch(
             }
     except InvalidGitRepositoryError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Not a Git repository: {repo_path}"}
+        return {
+            "status": "error",
+            "message": f"Not a Git repository: {repo_path}",
+        }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"Failed to switch branch: {str(e)}"}
+        return {"status": "error", "message": f"Failed to switch branch: {e!s}"}

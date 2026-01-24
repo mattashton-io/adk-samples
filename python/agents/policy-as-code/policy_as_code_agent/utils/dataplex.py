@@ -1,5 +1,7 @@
 import os
 
+import google.auth
+
 
 def get_project_id():
     """Gets the GCP project ID from environment or gcloud config."""
@@ -8,8 +10,6 @@ def get_project_id():
         return project_id, None
 
     try:
-        import google.auth
-
         _, project_id = google.auth.default()
         if project_id:
             return project_id, None
@@ -28,7 +28,10 @@ def convert_proto_to_dict(proto_obj):
     into standard Python dictionaries and lists.
     """
     if hasattr(proto_obj, "keys"):  # Acts like a dict
-        return {key: convert_proto_to_dict(value) for key, value in proto_obj.items()}
+        return {
+            key: convert_proto_to_dict(value)
+            for key, value in proto_obj.items()
+        }
     elif hasattr(proto_obj, "__iter__") and not isinstance(
         proto_obj, str
     ):  # Acts like a list
