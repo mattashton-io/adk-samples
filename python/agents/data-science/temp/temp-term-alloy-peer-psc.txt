@@ -1,0 +1,5 @@
+(data-science) mattashton@mattashton:~/Documents/pyTutoring/ryan-sessions/adk-samples/python/agents/data-science$ gcloud alloydb instances create $INSTANCE     --instance-type=PRIMARY     --cpu-count=8     --region=us-central1     --cluster=${CLUSTER}2     --project=$PROJECT_ID     --ssl-mode=ALLOW_UNENCRYPTED_
+AND_ENCRYPTED     --database-flags=password.enforce_complexity=on
+Operation ID: operation-1771972072261-64b9965eb46a9-e0f293e2-74c3517e
+Creating instance...failed.                                                                            
+ERROR: (gcloud.alloydb.instances.create) Invalid resource state for "projects/396631018769/global/networks/pytutoring-dev-vpc": service networking config validation failed NETWORK_NOT_PEERED - no peering found on specified VPC network with Service Networking, please follow https://cloud.google.com/alloydb/docs/configure-connectivity
