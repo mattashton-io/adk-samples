@@ -25,7 +25,6 @@ from google.cloud import storage
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
 
-from data_science.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")
@@ -39,7 +38,7 @@ flags.DEFINE_bool("create", False, "Create a new agent.")
 flags.DEFINE_bool("delete", False, "Delete an existing agent.")
 flags.mark_bool_flags_as_mutual_exclusive(["create", "delete"])
 
-AGENT_WHL_FILE = "data_science-0.1-py3-none-any.whl"
+AGENT_WHL_FILE = "data_science-0.1.0-py3-none-any.whl"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -125,6 +124,8 @@ def setup_staging_bucket(
 
 def create(env_vars: dict[str, str]) -> None:
     """Creates and deploys the agent."""
+    from data_science.agent import root_agent
+
     adk_app = AdkApp(
         agent=root_agent,
         enable_tracing=False,
@@ -201,6 +202,10 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
         "BQML_RAG_CORPUS_NAME",
         "CODE_INTERPRETER_EXTENSION_NAME",
         "NL2SQL_METHOD",
+        "DATASET_CONFIG_FILE",
+        "MCP_TOOLBOX_HOST",
+        "MCP_TOOLBOX_PORT",
+        "MCP_TOOLBOX_URL",
     ]
 
     skipped_vars: list[str] = []

@@ -93,6 +93,14 @@ def load_dataset_config():
     if not dataset_config_file:
         _logger.fatal("DATASET_CONFIG_FILE env var not set")
 
+    # If the file doesn't exist relative to CWD, try relative to the project root
+    if not os.path.exists(dataset_config_file) and not os.path.isabs(dataset_config_file):
+        # This file is in data_science/agent.py, so .. is the project root
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        alternative_path = os.path.join(project_root, dataset_config_file.lstrip("./"))
+        if os.path.exists(alternative_path):
+            dataset_config_file = alternative_path
+
     with open(dataset_config_file, encoding="utf-8") as f:
         dataset_config = json.load(f)
 
@@ -171,7 +179,7 @@ def get_dataset_definitions_for_instructions() -> str:
 def load_database_settings_in_context(callback_context: CallbackContext):
     """Load database settings into the callback context on first use."""
     if "database_settings" not in callback_context.state:
-        callback_context.state["database_settings"] = _database_settings
+        callback_context.state["database_settings"] = get_database_settings_lazy()
 
 
 def get_root_agent() -> LlmAgent:
@@ -206,7 +214,13 @@ def get_root_agent() -> LlmAgent:
 
 # Initialize dataset configurations and database info before the agent starts
 _dataset_config = load_dataset_config()
-_database_settings = init_database_settings(_dataset_config)
+_database_settings = None
+
+def get_database_settings_lazy() -> dict:
+    global _database_settings
+    if _database_settings is None:
+        _database_settings = init_database_settings(_dataset_config)
+    return _database_settings
 
 
 # Fetch the root agent

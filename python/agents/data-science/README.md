@@ -278,7 +278,7 @@ allow your ADK Agent to access the AlloyDB cluster.
 
     ```bash
     gcloud alloydb instances update $INSTANCE \
-        --cluster=$CLUSTER  \
+        --cluster=${CLUSTER}2  \
         --region=$REGION  \
         --assign-inbound-public-ip=ASSIGN_IPV4
     ```
@@ -318,7 +318,7 @@ DATASET_CONFIG_FILE='./forecasting_sticker_sales_dataset_config.json'
 ```
 or
 ```bash
-DATASET_CONFIG_FILE='./flights_dataset_config.json
+DATASET_CONFIG_FILE='./flights_dataset_config.json'
 ```
 #### Dataset Configuration File Format
 The two provided configuration files give examples of how to specify
@@ -485,6 +485,13 @@ from the working directory:
     uv run adk web
     ```
     Select the data_science from the dropdown
+
+3.  **Run the Flask Demo Application:**
+    For a custom chat experience, you can run the provided Flask demo:
+    ```bash
+    python demo/app.py
+    ```
+    Then, navigate to `http://localhost:5000` in your browser.
 
 
 

@@ -86,6 +86,8 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
 
     agent = agent_engines.get(FLAGS.resource_id)
     print(f"Found agent with resource ID: {FLAGS.resource_id}")
+    print(f"Operation schemas: {agent.operation_schemas()}")
+    print(f"Available methods: {[m for m in dir(agent) if not m.startswith('_')]}")
 
     print(f"Created session for user ID: {FLAGS.user_id}")
     print("Type 'quit' to exit.")
@@ -94,16 +96,22 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
         if user_input == "quit":
             break
 
-        for event in agent.stream_query(
-            user_id=FLAGS.user_id, session_id=session.id, message=user_input
-        ):
-            if "content" in event:
-                if "parts" in event["content"]:
-                    parts = event["content"]["parts"]
-                    for part in parts:
-                        if "text" in part:
-                            text_part = part["text"]
-                            print(f"Response: {text_part}")
+        try:
+            for event in agent.stream_query(
+                user_id=FLAGS.user_id, session_id=session.id, message=user_input
+            ):
+                if "content" in event:
+                    if "parts" in event["content"]:
+                        parts = event["content"]["parts"]
+                        for part in parts:
+                            if "text" in part:
+                                text_part = part["text"]
+                                print(f"Response: {text_part}")
+        except Exception as e:
+            print(f"Error during stream_query: {e}")
+            import traceback
+
+            traceback.print_exc()
 
     asyncio.run(
         session_service.delete_session(

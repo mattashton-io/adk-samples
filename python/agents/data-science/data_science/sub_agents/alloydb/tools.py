@@ -68,10 +68,10 @@ def get_toolbox_client():
             toolbox_client = ToolboxSyncClient(toolbox_url)
         else:
             toolbox_url = f"https://{MCP_TOOLBOX_HOST}"
-            if MCP_TOOLBOX_PORT != "":
+            if MCP_TOOLBOX_PORT != "" and MCP_TOOLBOX_PORT != "443":
                 toolbox_url += f":{MCP_TOOLBOX_PORT}"
             logger.info("Connecting to remote MCP Toolbox at %s", toolbox_url)
-            auth_token_provider = auth_methods.aget_google_id_token(toolbox_url)
+            auth_token_provider = auth_methods.get_google_id_token(toolbox_url)
             toolbox_client = ToolboxSyncClient(
                 toolbox_url,
                 client_headers={"Authorization": auth_token_provider},
