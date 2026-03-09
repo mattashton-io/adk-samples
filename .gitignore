@@ -227,4 +227,11 @@ go/agents/sail-researcher/researcher
 go/agents/sail-researcher/vendor/*
 go/agents/sail-researcher/server
 
-temp/
+ref/
+*.sh 
+*.txt
+
+*.env
+
+README copy.md
+toolbox

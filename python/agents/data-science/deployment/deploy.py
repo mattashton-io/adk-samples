@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 from google.api_core import exceptions as google_exceptions
 from google.cloud import storage
 from vertexai import agent_engines
+from vertexai.preview import reasoning_engines
 from vertexai.preview.reasoning_engines import AdkApp
 
 
@@ -126,21 +127,57 @@ def create(env_vars: dict[str, str]) -> None:
     """Creates and deploys the agent."""
     from data_science.agent import root_agent
 
+    display_name = "data-science-agent"
+    
+    try:
+        existing_engines = reasoning_engines.ReasoningEngine.list(filter=f'display_name="{display_name}"')
+        if existing_engines:
+            print(f"An existing agent with display_name '{display_name}' was found.")
+            choice = input("Do you want to delete the existing agent(s) before creating a new one? (y/n): ")
+            if choice.lower().strip() == 'y':
+                for engine in existing_engines:
+                    print(f"Deleting {engine.resource_name}...")
+                    engine.delete()
+            else:
+                print("Proceeding to create a new agent without deleting the old one.")
+    except Exception as e:
+        logger.warning(f"Could not check for existing agents: %s", e)
+
+    enable_tracing = bool(os.getenv("WANDB_API_KEY") and os.getenv("WANDB_PROJECT_ID"))
     adk_app = AdkApp(
         agent=root_agent,
-        enable_tracing=False,
+        enable_tracing=enable_tracing,
     )
+
+    logger.info("Local root_agent methods: %s", [m for m in dir(root_agent) if not m.startswith('_')])
+    # Check if the wrapper has the expected method
+    if not hasattr(root_agent, 'stream'):
+        logger.error("Root agent wrapper missing 'stream' method. Deployment will likely fail.")
+
 
     if not os.path.exists(AGENT_WHL_FILE):
         logger.error("Agent wheel file not found at: %s", AGENT_WHL_FILE)
         # Consider adding instructions here on how to build the wheel file
-        raise FileNotFoundError(f"Agent wheel file not found: {AGENT_WHL_FILE}")
+        raise FileNotFoundError(f"Agent wheel file not found: {AGENT_WHL_FILE}. Please run 'uv build --wheel' to create it.")
+
+    if "0.1.0" not in AGENT_WHL_FILE:
+        logger.warning("Agent wheel file version mismatch or unexpected format: %s", AGENT_WHL_FILE)
+
+    requirements = [AGENT_WHL_FILE]
+    if os.path.exists("requirements.txt"):
+        logger.info("Reading dependencies from requirements.txt to deployment.")
+        with open("requirements.txt", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    requirements.append(line)
 
     logger.info("Using agent wheel file: %s", AGENT_WHL_FILE)
 
     remote_agent = agent_engines.create(
         adk_app,
-        requirements=[AGENT_WHL_FILE],
+        display_name=display_name,
+        requirements=requirements,
         extra_packages=[AGENT_WHL_FILE],
         env_vars=env_vars,
     )

@@ -34,18 +34,22 @@ logger = logging.getLogger(__name__)
 
 # Assume that `BQ_COMPUTE_PROJECT_ID` and `BQ_DATA_PROJECT_ID` are set in the
 # environment. See the `data_agent` README for more details.
-dataset_id = get_env_var("BQ_DATASET_ID")
-data_project = get_env_var("BQ_DATA_PROJECT_ID")
-compute_project = get_env_var("BQ_COMPUTE_PROJECT_ID")
-vertex_project = get_env_var("GOOGLE_CLOUD_PROJECT")
-location = get_env_var("GOOGLE_CLOUD_LOCATION")
-http_options = HttpOptions(headers={"user-agent": USER_AGENT})
-llm_client = Client(
-    vertexai=True,
-    project=vertex_project,
-    location=location,
-    http_options=http_options,
-)
+llm_client = None
+
+def get_llm_client():
+    """Gets the LLM client, initializing it if necessary."""
+    global llm_client
+    if llm_client is None:
+        vertex_project = get_env_var("GOOGLE_CLOUD_PROJECT")
+        location = get_env_var("GOOGLE_CLOUD_LOCATION")
+        http_options = HttpOptions(headers={"user-agent": USER_AGENT})
+        llm_client = Client(
+            vertexai=True,
+            project=vertex_project,
+            location=location,
+            http_options=http_options,
+        )
+    return llm_client
 
 MAX_NUM_ROWS = 10000
 
@@ -105,6 +109,10 @@ def update_database_settings():
 
 def get_bigquery_schema_and_samples():
     """Retrieves schema and sample values for the BigQuery dataset tables."""
+    compute_project = get_env_var("BQ_COMPUTE_PROJECT_ID")
+    data_project = get_env_var("BQ_DATA_PROJECT_ID")
+    dataset_id = get_env_var("BQ_DATASET_ID")
+
     client = get_bigquery_client(
         project=compute_project,
         credentials=None,
@@ -213,7 +221,7 @@ best practices outlined above to generate the correct BigQuery SQL.
         MAX_NUM_ROWS=MAX_NUM_ROWS, SCHEMA=schema, QUESTION=question
     )
 
-    response = llm_client.models.generate_content(
+    response = get_llm_client().models.generate_content(
         model=os.getenv("BASELINE_NL2SQL_MODEL", ""),
         contents=prompt,
         config={"temperature": 0.1},

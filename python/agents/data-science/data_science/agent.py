@@ -38,6 +38,7 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 
 from .prompts import return_instructions_root
 from .sub_agents import bqml_agent
+from typing import Mapping, Optional, Sequence, Any
 from .sub_agents.alloydb.tools import (
     get_database_settings as get_alloydb_database_settings,
 )
@@ -80,8 +81,9 @@ logging.basicConfig(level=logging.INFO)
 _logger = logging.getLogger(__name__)
 
 # Initialize module-level config variables
-_dataset_config = {}
-_database_settings = {}
+_dataset_config = None
+_database_settings = None
+_root_agent_instance = None
 _supported_dataset_types = ["bigquery", "alloydb"]
 _required_dataset_config_params = ["name", "description"]
 
@@ -156,7 +158,7 @@ def get_dataset_definitions_for_instructions() -> str:
 </DESCRIPTION>
 <SCHEMA>
 --------- The schema of the relevant database with a few sample rows. --------
-{_database_settings[dataset_type]["schema"]}
+{{schema_{dataset_type}}}
 </SCHEMA>
 </{dataset_type.upper()}>
 
@@ -179,7 +181,21 @@ def get_dataset_definitions_for_instructions() -> str:
 def load_database_settings_in_context(callback_context: CallbackContext):
     """Load database settings into the callback context on first use."""
     if "database_settings" not in callback_context.state:
-        callback_context.state["database_settings"] = get_database_settings_lazy()
+        settings = get_database_settings_lazy()
+        callback_context.state["database_settings"] = settings
+        for ds_type, db_setting in settings.items():
+            callback_context.state[f"schema_{ds_type}"] = db_setting.get("schema", "")
+
+
+def get_database_settings_lazy() -> dict:
+    """Gets the database settings, initializing them if necessary."""
+    global _database_settings
+    global _dataset_config
+    if _database_settings is None:
+        if not _dataset_config:
+            _dataset_config = load_dataset_config()
+        _database_settings = init_database_settings(_dataset_config)
+    return _database_settings
 
 
 def get_root_agent() -> LlmAgent:
@@ -212,16 +228,46 @@ def get_root_agent() -> LlmAgent:
     return agent
 
 
-# Initialize dataset configurations and database info before the agent starts
-_dataset_config = load_dataset_config()
-_database_settings = None
+def get_root_agent_lazy() -> LlmAgent:
+    """Gets the root agent, initializing it if necessary."""
+    global _root_agent_instance
+    global _dataset_config
+    if _root_agent_instance is None:
+        if not _dataset_config:
+            _dataset_config = load_dataset_config()
+        _root_agent_instance = get_root_agent()
+    return _root_agent_instance
 
-def get_database_settings_lazy() -> dict:
-    global _database_settings
-    if _database_settings is None:
-        _database_settings = init_database_settings(_dataset_config)
-    return _database_settings
+
+class AgentWrapper(LlmAgent):
+    """Wrapper for LlmAgent to ensure Reasoning Engine compatibility and discovery."""
+
+    def __init__(self):
+        # We don't call super().__init__() here to avoid initializing the base LlmAgent
+        # until we actually need it. This keeps the package import-safe.
+        self._agent = None
+
+    @property
+    def agent(self) -> LlmAgent:
+        if self._agent is None:
+            self._agent = get_root_agent_lazy()
+        return self._agent
+
+    def run_async(self, *args, **kwargs):
+        """Proxies run_async to the real agent."""
+        return self.agent.run_async(*args, **kwargs)
+
+    def stream(
+        self,
+        input: Mapping[str, Any],
+        config: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> Any:
+        return self.agent.run_async(input=input, config=config, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.agent, name)
 
 
-# Fetch the root agent
-root_agent = get_root_agent()
+# Expose the wrapper as the deployment target
+root_agent = AgentWrapper()

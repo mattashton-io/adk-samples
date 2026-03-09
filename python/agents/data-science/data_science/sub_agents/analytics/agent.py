@@ -21,12 +21,33 @@ from google.adk.code_executors import VertexAiCodeExecutor
 
 from .prompts import return_instructions_analytics
 
-analytics_agent = Agent(
-    model=os.getenv("ANALYTICS_AGENT_MODEL", ""),
-    name="analytics_agent",
-    instruction=return_instructions_analytics(),
-    code_executor=VertexAiCodeExecutor(
-        optimize_data_file=True,
-        stateful=True,
-    ),
-)
+_analytics_agent_instance = None
+
+
+def get_analytics_agent() -> Agent:
+    """Gets the analytics agent, initializing it if necessary."""
+    global _analytics_agent_instance
+    if _analytics_agent_instance is None:
+        _analytics_agent_instance = Agent(
+            model=os.getenv("ANALYTICS_AGENT_MODEL", ""),
+            name="analytics_agent",
+            instruction=return_instructions_analytics(),
+            code_executor=VertexAiCodeExecutor(
+                optimize_data_file=True,
+                stateful=True,
+            ),
+        )
+    return _analytics_agent_instance
+
+
+# Property-like access for backward compatibility within the package
+class AnalyticsAgentProxy:
+    @property
+    def agent(self) -> Agent:
+        return get_analytics_agent()
+
+    def __getattr__(self, name):
+        return getattr(self.agent, name)
+
+
+analytics_agent = AnalyticsAgentProxy()

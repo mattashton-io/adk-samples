@@ -36,15 +36,23 @@ MCP_TOOLBOX_PORT = os.getenv("MCP_TOOLBOX_PORT", "5000")
 
 # MAX_NUM_ROWS = 80
 
-vertex_project = os.getenv("GOOGLE_CLOUD_PROJECT", None)
-location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
-http_options = HttpOptions(headers={"user-agent": USER_AGENT})
-llm_client = Client(
-    vertexai=True,
-    project=vertex_project,
-    location=location,
-    http_options=http_options,
-)
+llm_client = None
+
+
+def get_llm_client():
+    """Gets the LLM client, initializing it if necessary."""
+    global llm_client
+    if llm_client is None:
+        vertex_project = os.getenv("GOOGLE_CLOUD_PROJECT", None)
+        location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+        http_options = HttpOptions(headers={"user-agent": USER_AGENT})
+        llm_client = Client(
+            vertexai=True,
+            project=vertex_project,
+            location=location,
+            http_options=http_options,
+        )
+    return llm_client
 
 database_settings = None
 toolbox_client = None
@@ -190,7 +198,7 @@ sample rows):
         QUESTION=question,
     )
 
-    response = llm_client.models.generate_content(
+    response = get_llm_client().models.generate_content(
         model=os.getenv("BASELINE_NL2SQL_MODEL", ""),
         contents=prompt,
         config={"temperature": 0.1},
