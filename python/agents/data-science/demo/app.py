@@ -81,12 +81,28 @@ async def _handle_chat(data):
 
         # Check for generated artifacts (e.g., images/plots)
         artifacts = []
-        session_artifacts = await artifact_service.list_artifacts(session_id=session_id)
-        for artifact in session_artifacts:
+        
+        # ORIGINAL CODE:
+        # session_artifacts = await artifact_service.list_artifacts(session_id=session_id)
+        # for artifact in session_artifacts:
+        #     artifacts.append({
+        #         "id": artifact.id,
+        #         "name": artifact.name,
+        #         "url": f"/artifacts/{artifact.id}"
+        #     })
+
+        # CHANGE CODE:
+        # Use list_artifact_keys and provide required app_name and user_id
+        session_artifacts = await artifact_service.list_artifact_keys(
+            app_name="DataScienceDemo", 
+            user_id=user_id, 
+            session_id=session_id
+        )
+        for filename in session_artifacts:
             artifacts.append({
-                "id": artifact.id,
-                "name": artifact.name,
-                "url": f"/artifacts/{artifact.id}"
+                "id": filename,
+                "name": filename,
+                "url": f"/artifacts/{filename}?user_id={user_id}"
             })
 
         return jsonify({
@@ -100,18 +116,45 @@ async def _handle_chat(data):
 
 @app.route("/artifacts/<artifact_id>")
 def get_artifact(artifact_id):
-    return asyncio.run(_handle_get_artifact(artifact_id))
+    # CHANGE CODE: 
+    # Retrieve user_id from arguments to look up the session
+    user_id = request.args.get("user_id", "demo_user")
+    return asyncio.run(_handle_get_artifact(artifact_id, user_id))
 
-async def _handle_get_artifact(artifact_id):
+# ORIGINAL CODE:
+# async def _handle_get_artifact(artifact_id):
+#     try:
+#         artifact = await artifact_service.get_artifact(artifact_id)
+#         if not artifact:
+#             return "Artifact not found", 404
+#         
+#         content = await artifact.read()
+#         
+#         from flask import Response
+#         return Response(content, mimetype='image/png') 
+
+# CHANGE CODE:
+async def _handle_get_artifact(artifact_id, user_id):
     try:
-        artifact = await artifact_service.get_artifact(artifact_id)
+        session_id = user_sessions.get(user_id)
+        if not session_id:
+            return "Session not found", 404
+
+        # Use load_artifact and extract data/mimetype from the Part object
+        artifact = await artifact_service.load_artifact(
+            app_name="DataScienceDemo",
+            user_id=user_id,
+            session_id=session_id,
+            filename=artifact_id
+        )
         if not artifact:
             return "Artifact not found", 404
         
-        content = await artifact.read()
+        content = artifact.inline_data.data
+        mimetype = artifact.inline_data.mime_type
         
         from flask import Response
-        return Response(content, mimetype='image/png') 
+        return Response(content, mimetype=mimetype) 
 
     except Exception as e:
         logger.error(f"Error retrieving artifact: {e}")
