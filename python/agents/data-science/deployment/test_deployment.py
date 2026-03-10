@@ -21,7 +21,7 @@ import vertexai
 from absl import app, flags
 from dotenv import load_dotenv
 from google.adk.sessions import VertexAiSessionService
-from vertexai.preview import reasoning_engines
+from vertexai import agent_engines
 
 FLAGS = flags.FLAGS
 
@@ -84,10 +84,8 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
         )
     )
 
-    agent = reasoning_engines.ReasoningEngine(FLAGS.resource_id)
+    agent = agent_engines.get(FLAGS.resource_id)
     print(f"Found agent with resource ID: {FLAGS.resource_id}")
-    print(f"Operation schemas: {agent.operation_schemas()}")
-    print(f"Available methods: {[m for m in dir(agent) if not m.startswith('_')]}")
 
     print(f"Created session for user ID: {FLAGS.user_id}")
     print("Type 'quit' to exit.")
@@ -96,27 +94,16 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
         if user_input == "quit":
             break
 
-        try:
-            if not hasattr(agent, "stream"):
-                print("Error: Remote agent has no registered 'stream' method. This usually means operation schemas were empty during deployment.")
-                print(f"Available methods: {[m for m in dir(agent) if not m.startswith('_')]}")
-                break
-
-            for event in agent.stream(
-                input={
-                    "message": user_input,
-                    "user_id": FLAGS.user_id,
-                    "session_id": session.id
-                }
-            ):
-                for part in event.get("content", {}).get("parts", []):
-                    if "text" in part:
-                        print(f"Response: {part['text']}")
-        except Exception as e:
-            print(f"Error during stream_query: {e}")
-            import traceback
-
-            traceback.print_exc()
+        for event in agent.stream_query(
+            user_id=FLAGS.user_id, session_id=session.id, message=user_input
+        ):
+            if "content" in event:
+                if "parts" in event["content"]:
+                    parts = event["content"]["parts"]
+                    for part in parts:
+                        if "text" in part:
+                            text_part = part["text"]
+                            print(f"Response: {text_part}")
 
     asyncio.run(
         session_service.delete_session(
