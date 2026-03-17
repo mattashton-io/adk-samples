@@ -39,6 +39,9 @@ flags.DEFINE_bool("create", False, "Create a new agent.")
 flags.DEFINE_bool("delete", False, "Delete an existing agent.")
 flags.mark_bool_flags_as_mutual_exclusive(["create", "delete"])
 
+#Adding service-account
+flags.DEFINE_string("service_account", None, "The custom service account email to run the agent.")
+
 AGENT_WHL_FILE = "data_science-0.1.0-py3-none-any.whl"
 
 # Configure logging
@@ -123,7 +126,7 @@ def setup_staging_bucket(
     return f"gs://{bucket_name}"
 
 
-def create(env_vars: dict[str, str]) -> None:
+def create(env_vars: dict[str, str], service_account: str = None) -> None:
     """Creates and deploys the agent."""
     from data_science.agent import root_agent
 
@@ -180,6 +183,7 @@ def create(env_vars: dict[str, str]) -> None:
         requirements=requirements,
         extra_packages=[AGENT_WHL_FILE],
         env_vars=env_vars,
+        service_account=service_account
     )
     logger.info("Created remote agent: %s", remote_agent.resource_name)
     print(f"\nSuccessfully created agent: {remote_agent.resource_name}")
@@ -311,7 +315,7 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
         )
 
         if FLAGS.create:
-            create(env_vars)
+            create(env_vars, service_account=FLAGS.service_account)
         elif FLAGS.delete:
             delete(FLAGS.resource_id)
 

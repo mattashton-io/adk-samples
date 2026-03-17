@@ -18,7 +18,8 @@ RUN pip install --no-cache-dir uv>=0.7.19
 COPY uv.lock pyproject.toml ./
 
 # Install project dependencies, sync to uv's lockfile
-RUN uv sync --frozen
+# In your Dockerfile, change the sync line to:
+RUN uv sync --frozen --index-url https://pypi.org/simple
 
 # Expose the port
 EXPOSE 8080
