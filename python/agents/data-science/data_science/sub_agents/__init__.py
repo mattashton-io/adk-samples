@@ -14,5 +14,5 @@
 
 from .alloydb.agent import alloydb_agent
 from .analytics.agent import analytics_agent
-from .bigquery.agent import bigquery_agent
+from .bigquery.agent import database_agent as bigquery_agent
 from .bqml.agent import root_agent as bqml_agent

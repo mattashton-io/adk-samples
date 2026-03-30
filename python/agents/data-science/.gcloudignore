@@ -1,0 +1,15 @@
+.gcloudignore
+.git
+.gitignore
+.dockerignore
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+build_failure_logs.txt
+deployment/
+eval/
+tests/
+infra/

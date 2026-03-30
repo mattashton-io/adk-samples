@@ -71,9 +71,9 @@ bigquery_toolset = BigQueryToolset(
     tool_filter=bigquery_tool_filter, bigquery_tool_config=bigquery_tool_config
 )
 
-bigquery_agent = LlmAgent(
+database_agent = LlmAgent(
     model=os.getenv("BIGQUERY_AGENT_MODEL", ""),
-    name="bigquery_agent",
+    name="database_agent",
     instruction=return_instructions_bigquery(),
     tools=[
         (

@@ -7,21 +7,22 @@ ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy
 
 WORKDIR /app
-COPY . .
 
 # Upgrade pip to the latest version
 RUN pip install --no-cache-dir --upgrade pip
 # Install uv
 RUN pip install --no-cache-dir uv>=0.7.19
 
-# Copy only the dependency files to leverage Docker layer caching
+# Export requirements to a temporary file and install with pip
+# This avoids 'uv sync' authentication issues with internal mirrors
 COPY uv.lock pyproject.toml ./
+RUN uv export --frozen --no-dev --no-hashes --output-file requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Install project dependencies, sync to uv's lockfile
-# In your Dockerfile, change the sync line to:
-RUN uv sync --frozen --index-url https://pypi.org/simple
+# Copy the rest of the application
+COPY . .
 
 # Expose the port
 EXPOSE 8080
 
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "main.py"]
