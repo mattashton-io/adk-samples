@@ -2,7 +2,7 @@
   "datasets": [
     {
       "type": "bigquery",
-      "name": "cymbal_flights_dataset",
+      "name": "flights_dataset",
       "description": "This data warehouse is used to analyze everything to run the business better.  It contains historical data from the AlloyDB database, enriched with other large-scale datasets. The data is somewhat denormalized (flattened) into wide tables to make querying faster and simpler.  For multi-year data, it includes data for the year 2024-2025."
     },
     {
@@ -16,7 +16,7 @@
       {
         "child": {
           "type": "bigquery",
-          "dataset": "cymbal_flights_dataset",
+          "dataset": "flights_dataset",
           "table": "flight_history",
           "column": "flight_id"
         },
@@ -30,7 +30,7 @@
       {
         "child": {
           "type": "bigquery",
-          "dataset": "cymbal_flights_dataset",
+          "dataset": "flights_dataset",
           "table": "flight_history",
           "column": "departure_airport_iata"
         },
@@ -44,7 +44,7 @@
       {
         "child": {
           "type": "bigquery",
-          "dataset": "cymbal_flights_dataset",
+          "dataset": "flights_dataset",
           "table": "flight_history",
           "column": "arrival_airport_iata"
         },
@@ -58,7 +58,7 @@
       {
         "child": {
           "type": "bigquery",
-          "dataset": "cymbal_flights_dataset",
+          "dataset": "flights_dataset",
           "table": "ticket_sales_history",
           "column": "flight_id"
         },
@@ -72,7 +72,7 @@
       {
         "child": {
           "type": "bigquery",
-          "dataset": "cymbal_flights_dataset",
+          "dataset": "flights_dataset",
           "table": "ticket_sales_history",
           "column": "customer_id"
         },
@@ -86,7 +86,7 @@
       {
         "child": {
           "type": "bigquery",
-          "dataset": "cymbal_flights_dataset",
+          "dataset": "flights_dataset",
           "table": "ticket_sales_history",
           "column": "ticket_id"
         },

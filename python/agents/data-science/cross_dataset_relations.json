@@ -3,7 +3,7 @@
     {
       "child": {
         "type": "bigquery",
-        "dataset": "cymbal_flights_dataset",
+        "dataset": "flights_dataset",
         "table": "flight_history",
         "column": "flight_id"
       },
@@ -17,7 +17,7 @@
     {
       "child": {
         "type": "bigquery",
-        "dataset": "cymbal_flights_dataset",
+        "dataset": "flights_dataset",
         "table": "flight_history",
         "column": "departure_airport_iata"
       },
@@ -31,7 +31,7 @@
     {
       "child": {
         "type": "bigquery",
-        "dataset": "cymbal_flights_dataset",
+        "dataset": "flights_dataset",
         "table": "flight_history",
         "column": "arrival_airport_iata"
       },
@@ -45,7 +45,7 @@
     {
       "child": {
         "type": "bigquery",
-        "dataset": "cymbal_flights_dataset",
+        "dataset": "flights_dataset",
         "table": "ticket_sales_history",
         "column": "flight_id"
       },
@@ -59,7 +59,7 @@
     {
       "child": {
         "type": "bigquery",
-        "dataset": "cymbal_flights_dataset",
+        "dataset": "flights_dataset",
         "table": "ticket_sales_history",
         "column": "customer_id"
       },
@@ -73,7 +73,7 @@
     {
       "child": {
         "type": "bigquery",
-        "dataset": "cymbal_flights_dataset",
+        "dataset": "flights_dataset",
         "table": "ticket_sales_history",
         "column": "ticket_id"
       },
