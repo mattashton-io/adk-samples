@@ -217,6 +217,40 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #64748b;
     }
+    /* Processing Indicator */
+    .processing-indicator {
+      display: none;
+      align-self: flex-start;
+      background-color: var(--message-agent);
+      padding: 0.75rem 1.25rem;
+      border-radius: 1rem;
+      border-bottom-left-radius: 0.25rem;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1rem;
+    }
+
+    .dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      height: 1.5rem;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary-accent);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.8); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
   </style>
 </head>
 
@@ -245,6 +279,14 @@
         </div>
       </div>
 
+      <div id="processing" class="processing-indicator" style="margin-left: 2rem;">
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
       <div class="input-area">
         <form class="input-container" id="chat-form">
           <input type="text" id="user-input" placeholder="Ask a question about your data..." autocomplete="off">
@@ -260,6 +302,7 @@
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
     const sessionInfo = document.getElementById('session-info');
+    const processingIndicator = document.getElementById('processing');
 
     const userId = 'demo_user_' + Math.random().toString(36).substr(2, 9);
     sessionInfo.textContent = `User: ${userId}`;
@@ -295,6 +338,8 @@
 
       userInput.disabled = true;
       sendButton.disabled = true;
+      processingIndicator.style.display = 'block';
+      chatHistory.scrollTop = chatHistory.scrollHeight;
 
       try {
         const response = await fetch('/chat', {
@@ -304,12 +349,15 @@
         });
 
         const data = await response.json();
+        processingIndicator.style.display = 'none';
+
         if (data.error) {
           appendMessage('agent', `Error: ${data.error}`);
         } else {
           appendMessage('agent', data.response, data.artifacts);
         }
       } catch (error) {
+        processingIndicator.style.display = 'none';
         appendMessage('agent', `Connection error: ${error.message}`);
       } finally {
         userInput.disabled = false;

@@ -117,7 +117,7 @@ async def call_analytics_agent(
 
   """
 
-    agent_tool = AgentTool(agent=analytics_agent)
+    agent_tool = AgentTool(agent=analytics_agent.agent)
 
     analytics_agent_output = await agent_tool.run_async(
         args={"request": question_with_data}, tool_context=tool_context

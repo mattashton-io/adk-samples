@@ -161,5 +161,5 @@ async def _handle_get_artifact(artifact_id, user_id):
         return str(e), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5016))
+    port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, debug=True)
