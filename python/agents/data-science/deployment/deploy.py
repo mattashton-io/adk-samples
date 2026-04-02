@@ -138,7 +138,7 @@ def create(env_vars: dict[str, str], service_account: str = None) -> None:
             logger.info("Found existing agents with name '%s'. Deleting them...", display_name)
             for engine in existing_engines:
                 logger.info("Deleting %s...", engine.resource_name)
-                engine.delete(force=True)
+                engine.delete()
     except Exception as e:
         logger.warning(f"Could not check for existing agents: %s", e)
 
@@ -243,6 +243,12 @@ def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
         "MCP_TOOLBOX_HOST",
         "MCP_TOOLBOX_PORT",
         "MCP_TOOLBOX_URL",
+        "ALLOYDB_TOOLSET",
+        "ALLOYDB_SCHEMA_NAME",
+        "ALLOYDB_DATABASE",
+        "ALLOYDB_PROJECT_ID",
+        "ALLOYDB_AGENT_MODEL",
+        "SESSION_SERVICE_URI",
     ]
 
     skipped_vars: list[str] = []

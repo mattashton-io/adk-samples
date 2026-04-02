@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir uv>=0.7.19
 
 # Export requirements to a temporary file and install with pip
 # This avoids 'uv sync' authentication issues with internal mirrors
-COPY uv.lock pyproject.toml README.md flights_dataset_config.json cross_dataset_relations.json ./
+COPY uv.lock pyproject.toml README.md *.json ./
 RUN uv export --frozen --no-dev --no-hashes --output-file requirements.txt && \
     pip install --no-cache-dir -r requirements.txt
 
