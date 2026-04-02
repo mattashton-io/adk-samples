@@ -42,7 +42,7 @@ flags.mark_bool_flags_as_mutual_exclusive(["create", "delete"])
 #Adding service-account
 flags.DEFINE_string("service_account", None, "The custom service account email to run the agent.")
 
-AGENT_WHL_FILE = "data_science-0.1.0-py3-none-any.whl"
+AGENT_WHL_FILE = "deployment/data_science-0.1.0-py3-none-any.whl"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -135,14 +135,10 @@ def create(env_vars: dict[str, str], service_account: str = None) -> None:
     try:
         existing_engines = reasoning_engines.ReasoningEngine.list(filter=f'display_name="{display_name}"')
         if existing_engines:
-            print(f"An existing agent with display_name '{display_name}' was found.")
-            choice = input("Do you want to delete the existing agent(s) before creating a new one? (y/n): ")
-            if choice.lower().strip() == 'y':
-                for engine in existing_engines:
-                    print(f"Deleting {engine.resource_name}...")
-                    engine.delete()
-            else:
-                print("Proceeding to create a new agent without deleting the old one.")
+            logger.info("Found existing agents with name '%s'. Deleting them...", display_name)
+            for engine in existing_engines:
+                logger.info("Deleting %s...", engine.resource_name)
+                engine.delete(force=True)
     except Exception as e:
         logger.warning(f"Could not check for existing agents: %s", e)
 
